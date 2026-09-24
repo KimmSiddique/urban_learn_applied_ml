@@ -64,7 +64,7 @@ impl HouseDetails {
             true_price,
         }
     }
-}
+} 
 
 pub(crate) struct EnvironmentFeatures {
     schools_within_10km: u8,
@@ -109,27 +109,31 @@ impl EnvironmentFeatures {
         }
     }
 
-    pub(crate) fn add_school(&mut self, position: &Position) {
+    pub(crate) fn add_school(&mut self, school_position: Position, house_position: &Position) {
         self.schools_within_10km += 1;
-        let new_avg = Self::calculate_average_distance(&self.school_positions, position);
+        self.school_positions.push(school_position);
+        let new_avg = Self::calculate_average_distance(&self.school_positions, house_position);
         self.average_school_distance_capped = new_avg;
     }
 
-    pub(crate) fn add_shop(&mut self, position: &Position) {
+    pub(crate) fn add_shop(&mut self, shop_position: Position, house_position: &Position) {
         self.shops_within_15km += 1;
-        let new_avg = Self::calculate_average_distance(&self.shop_positions, position);
+        self.shop_positions.push(shop_position);
+        let new_avg = Self::calculate_average_distance(&self.shop_positions, house_position);
         self.average_shop_distance_capped = new_avg;
     }
 
-    pub(crate) fn add_park(&mut self, position: &Position) {
+    pub(crate) fn add_park(&mut self, park_position: Position, house_position: &Position) {
         self.parks_within_20km += 1;
-        let new_avg = Self::calculate_average_distance(&self.park_positions, position);
+        self.park_positions.push(park_position);
+        let new_avg = Self::calculate_average_distance(&self.park_positions, house_position);
         self.average_park_distance_capped = new_avg;
     }
 
-    pub(crate) fn add_factory(&mut self, position: &Position) {
+    pub(crate) fn add_factory(&mut self, factory_position: Position, house_position: &Position) {
         self.factories_within_30km += 1;
-        let new_avg = Self::calculate_average_distance(&self.factory_positions, position);
+        self.factory_positions.push(factory_position);
+        let new_avg = Self::calculate_average_distance(&self.factory_positions, house_position);
         self.average_factory_distance_capped = new_avg;
     }
 
@@ -149,5 +153,84 @@ impl EnvironmentFeatures {
         let average_distance = total_distance / building_count;
         average_distance
 
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+
+    #[test]
+    fn test_calculate_average_distance() {
+        let building_positions = vec![Position::new(10, 10), Position::new(5, 5), Position::new(2, 4)];
+        let parent_position = Position::new(5, 5);
+
+        assert_eq!(14.0/3.0, EnvironmentFeatures::calculate_average_distance(&building_positions, &parent_position));
+        
+    }
+
+    #[test]
+    fn test_get_position() {
+        let house_position = Position::new(10, 10);
+        let (pos_x, pos_y) = house_position.get_position();
+
+        assert_eq!((10, 10), (pos_x, pos_y));
+    }
+
+    #[test]
+    fn test_add_shop() {
+        let mut env_features = EnvironmentFeatures::new();
+        let parent_position = Position::new(8, 8);
+        env_features.add_shop(Position::new(10, 10), &parent_position);
+        assert_eq!(4.0, env_features.average_shop_distance_capped);
+
+        env_features.add_shop(Position::new(5, 6), &parent_position);
+        env_features.add_shop(Position::new(15, 20), &parent_position);
+
+        assert_eq!(28.0/3.0, env_features.average_shop_distance_capped);
+
+    }
+
+    #[test]
+     fn test_add_factory() {
+        let mut env_features = EnvironmentFeatures::new();
+        let parent_position = Position::new(8, 8);
+        env_features.add_factory(Position::new(10, 10), &parent_position);
+        assert_eq!(4.0, env_features.average_factory_distance_capped);
+
+        env_features.add_factory(Position::new(5, 6), &parent_position);
+        env_features.add_factory(Position::new(15, 20), &parent_position);
+
+        assert_eq!(28.0/3.0, env_features.average_factory_distance_capped);
+
+    }
+    
+    #[test]
+      fn test_add_school() {
+        let mut env_features = EnvironmentFeatures::new();
+        let parent_position = Position::new(8, 8);
+        env_features.add_school(Position::new(10, 10), &parent_position);
+        assert_eq!(4.0, env_features.average_school_distance_capped);
+
+        env_features.add_school(Position::new(10, 10), &parent_position);
+        env_features.add_school(Position::new(0, 8), &parent_position);
+
+        assert_eq!(16.0/3.0, env_features.average_school_distance_capped);
+
+    }
+
+    #[test]
+    fn add_park() {
+        let mut env_features = EnvironmentFeatures::new();
+        let parent_position = Position::new(10, 10);
+        env_features.add_park(Position::new(5, 5), &parent_position);
+        assert_eq!(10.0, env_features.average_park_distance_capped);
+
+        env_features.add_park(Position::new(0, 18), &parent_position);
+        env_features.add_park(Position::new(2, 25), &parent_position);
+
+        assert_eq!(17.0, env_features.average_park_distance_capped);
     }
 }
