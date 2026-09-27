@@ -1,9 +1,4 @@
-use std::{
-    fs::File,
-    io::BufReader,
-    path::Path,
-};
-
+use std::{fs::File, io::BufReader, path::Path};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
@@ -91,21 +86,21 @@ impl HouseDetails {
 }
 
 pub(crate) struct EnvironmentFeatures {
-    schools_within_10km: u8,
+    schools_within_10km: u16,
     school_positions: Vec<Position>,
 
     // school distance will be capped to 10km, so even if we don't find any schools within a 10km radius it will still just say 10km
     average_school_distance_capped: f32,
 
-    shops_within_15km: u8,
+    shops_within_15km: u16,
     shop_positions: Vec<Position>,
     average_shop_distance_capped: f32,
 
-    parks_within_20km: u8,
+    parks_within_20km: u16,
     park_positions: Vec<Position>,
     average_park_distance_capped: f32,
 
-    factories_within_30km: u8,
+    factories_within_30km: u16,
     factory_positions: Vec<Position>,
     average_factory_distance_capped: f32,
 }
@@ -177,6 +172,38 @@ impl EnvironmentFeatures {
         let building_count: f32 = building_positions.len() as f32;
         let average_distance = total_distance / building_count;
         average_distance
+    }
+
+    pub(crate) fn get_num_schools(&self) -> u16 {
+        self.schools_within_10km
+    }
+
+    pub(crate) fn get_num_shops(&self) -> u16 {
+        self.shops_within_15km
+    }
+
+    pub(crate) fn get_num_parks(&self) -> u16 {
+        self.parks_within_20km
+    }
+
+    pub(crate) fn get_num_factories(&self) -> u16 {
+        self.factories_within_30km
+    }
+
+    pub(crate) fn get_avg_shop_dist(&self) -> f32 {
+        self.average_shop_distance_capped
+    }
+
+    pub(crate) fn get_avg_school_dist(&self) -> f32 {
+        self.average_school_distance_capped
+    }
+
+    pub(crate) fn get_avg_factory_dist(&self) -> f32 {
+        self.average_factory_distance_capped
+    }
+
+    pub(crate) fn get_avg_park_dist(&self) -> f32 {
+        self.average_park_distance_capped
     }
 }
 
