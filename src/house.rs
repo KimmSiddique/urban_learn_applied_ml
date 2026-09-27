@@ -182,8 +182,8 @@ impl EnvironmentFeatures {
 
 pub(crate) fn read_vector_of_positions(path: &Path) -> Option<Vec<Position>> {
     let file = File::open(path).ok()?;
-    let buffReader = BufReader::new(file);
-    serde_json::from_reader(buffReader).ok()
+    let buff_reader = BufReader::new(file);
+    serde_json::from_reader(buff_reader).ok()
 }
 
 pub(crate) fn display_vec_of_positions(positions: &Vec<Position>) {
