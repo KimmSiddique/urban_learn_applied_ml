@@ -135,4 +135,14 @@ mod tests {
         load_map_to_file(&map, "saved_map1.json").expect("Could not save map");
         load_map_to_file(&map, "saved_map2").expect("Could not save map");
     }
+
+    #[test]
+    fn test_construct_map_after_load_map_to_file() {
+        // Assuming you ran the test_load_map_to_file() function, there should exist some saved maps...
+        let mut map_path = PathBuf::from("saved_maps");
+        map_path.push("saved_map1.json");
+        let map = construct_map_from_file(&map_path).expect("Could not construct map");
+
+        display_map(&map);
+    }
 }
