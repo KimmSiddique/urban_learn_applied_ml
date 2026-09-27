@@ -1,0 +1,10 @@
+[
+  ["House", "Empty", "Shop", "Empty", "Park", "House", "Empty", "School"],
+  ["Empty", "Factory", "House", "Empty", "Shop", "Empty", "House", "Park"],
+  ["Shop", "Empty", "Empty", "House", "Empty", "Factory", "Empty", "House"],
+  ["House", "Park", "Empty", "School", "House", "Empty", "Shop", "Empty"],
+  ["Empty", "House", "Factory", "Empty", "Empty", "Park", "House", "Empty"],
+  ["Park", "Empty", "House", "Shop", "Empty", "House", "Empty", "Factory"],
+  ["Empty", "Shop", "Empty", "House", "Park", "Empty", "House", "Empty"],
+  ["House", "Empty", "School", "Empty", "House", "Shop", "Empty", "Park"]
+]

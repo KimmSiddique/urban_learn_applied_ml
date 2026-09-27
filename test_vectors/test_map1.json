@@ -1,0 +1,6 @@
+[
+    ["Empty", "House", "School", "Shop"],
+    ["Park", "Factory", "Empty", "House"],
+    ["School", "Shop", "Park", "Factory"],
+    ["Factory", "Park", "Shop", "Empty"]
+]

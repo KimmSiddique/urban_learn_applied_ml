@@ -1,0 +1,22 @@
+[
+  ["House", "Empty", "Shop", "Empty", "School", "House", "Empty", "Park", "House", "Empty", "Shop", "Empty", "Factory", "House", "Empty", "Park", "House", "Empty", "Shop", "Empty"],
+  ["Empty", "Park", "House", "Factory", "Empty", "Shop", "House", "Empty", "School", "House", "Empty", "Park", "House", "Empty", "Factory", "Empty", "Shop", "House", "Empty", "Park"],
+  ["Shop", "Empty", "Empty", "House", "Park", "Empty", "Factory", "House", "Empty", "Empty", "Shop", "House", "Empty", "School", "House", "Park", "Empty", "Empty", "Factory", "House"],
+  ["House", "School", "Park", "Empty", "Empty", "House", "Empty", "Shop", "House", "Factory", "Empty", "Empty", "Park", "House", "Empty", "Empty", "Shop", "House", "Empty", "School"],
+  ["Empty", "House", "Empty", "Factory", "Shop", "Empty", "House", "Empty", "Park", "Empty", "House", "Shop", "Empty", "Empty", "Factory", "House", "Empty", "Park", "House", "Empty"],
+  ["Park", "Empty", "House", "Empty", "School", "House", "Empty", "Factory", "Empty", "Shop", "House", "Empty", "Park", "House", "Empty", "School", "House", "Empty", "Empty", "Shop"],
+  ["Empty", "Shop", "House", "Park", "Empty", "Empty", "Shop", "House", "Factory", "Empty", "Empty", "House", "Park", "Empty", "House", "Empty", "Factory", "House", "Park", "Empty"],
+  ["Factory", "Empty", "Empty", "House", "Shop", "Empty", "Park", "Empty", "House", "School", "Shop", "Empty", "House", "Factory", "Empty", "Park", "Empty", "House", "Empty", "Shop"],
+  ["House", "Park", "Empty", "Empty", "Factory", "House", "Empty", "Shop", "Empty", "House", "Empty", "Park", "Empty", "House", "Shop", "Empty", "Factory", "Empty", "House", "Empty"],
+  ["Empty", "House", "School", "Shop", "Empty", "Empty", "House", "Park", "Factory", "Empty", "House", "Empty", "Shop", "Empty", "House", "Park", "Empty", "School", "Empty", "House"],
+  ["Shop", "Empty", "House", "Empty", "Park", "House", "Empty", "Empty", "Shop", "House", "Empty", "Factory", "House", "Park", "Empty", "Empty", "House", "Empty", "Shop", "Empty"],
+  ["Empty", "House", "Empty", "Factory", "House", "Empty", "School", "House", "Empty", "Empty", "Park", "House", "Empty", "Shop", "House", "Factory", "Empty", "Park", "Empty", "House"],
+  ["Park", "Empty", "Shop", "House", "Empty", "Factory", "House", "Empty", "Park", "House", "Empty", "Empty", "Shop", "House", "Empty", "School", "House", "Empty", "Factory", "Empty"],
+  ["House", "Factory", "Empty", "Empty", "House", "Shop", "Empty", "Park", "House", "Empty", "School", "House", "Empty", "Empty", "Shop", "House", "Empty", "Park", "Empty", "House"],
+  ["Empty", "House", "Park", "Shop", "Empty", "House", "Factory", "Empty", "Empty", "House", "Park", "Empty", "House", "Factory", "Empty", "Empty", "Shop", "House", "Park", "Empty"],
+  ["School", "Empty", "House", "Empty", "Park", "Empty", "House", "Shop", "Factory", "Empty", "House", "School", "Empty", "Park", "House", "Empty", "Shop", "Empty", "House", "Factory"],
+  ["Empty", "Shop", "Empty", "House", "Empty", "Factory", "Empty", "House", "Empty", "Park", "Empty", "House", "Shop", "Empty", "Empty", "House", "Park", "Factory", "Empty", "Empty"],
+  ["House", "Empty", "Factory", "Empty", "House", "Empty", "Shop", "Empty", "House", "Empty", "School", "Empty", "House", "Park", "Factory", "Empty", "House", "Empty", "Shop", "House"],
+  ["Empty", "Park", "House", "Shop", "Empty", "House", "Empty", "Factory", "Empty", "House", "Empty", "Shop", "Empty", "House", "Empty", "Park", "Empty", "House", "Empty", "Empty"],
+  ["Shop", "House", "Empty", "Empty", "School", "Empty", "House", "Park", "House", "Empty", "Factory", "House", "Park", "Empty", "Shop", "Empty", "House", "Empty", "Park", "House"]
+]
