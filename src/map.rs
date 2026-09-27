@@ -3,7 +3,11 @@
 use crate::house::Position;
 use rand;
 use serde::{Deserialize, Serialize};
-use std::{fs::{File, create_dir_all}, io::{BufReader, BufWriter, Write}, path::{Path, PathBuf}};
+use std::{
+    fs::{File, create_dir_all},
+    io::{BufReader, BufWriter, Write},
+    path::{Path, PathBuf},
+};
 
 #[repr(u8)]
 #[derive(Clone, Copy, PartialEq, Serialize, Deserialize, Debug)]
@@ -44,7 +48,7 @@ pub(crate) fn create_map(
             } else if probability >= 38 && probability < 45 {
                 *cell = BuildingType::Factory;
                 building_positions[4].push(Position::new(y_pos, x_pos));
-            } 
+            }
         }
     }
     map
@@ -66,11 +70,14 @@ pub(crate) fn construct_map_from_file(path: &Path) -> Option<Vec<Vec<BuildingTyp
     serde_json::from_reader(reader).ok()
 }
 
-pub(crate) fn load_map_to_file(map: &Vec<Vec<BuildingType>>, path: impl AsRef<Path>) -> Result<(), Box<dyn std::error::Error>>{
+pub(crate) fn load_map_to_file(
+    map: &Vec<Vec<BuildingType>>,
+    path: impl AsRef<Path>,
+) -> Result<(), Box<dyn std::error::Error>> {
     let mut map_path = PathBuf::from("saved_maps");
-    
+
     create_dir_all(&map_path)?;
-    
+
     let mut pathy = path.as_ref().to_path_buf();
 
     if !pathy.extension().is_some_and(|ext| ext == "json") {
@@ -78,7 +85,6 @@ pub(crate) fn load_map_to_file(map: &Vec<Vec<BuildingType>>, path: impl AsRef<Pa
     }
 
     map_path.push(pathy);
-
 
     let user_path = File::create(map_path)?;
     let mut writer = BufWriter::new(user_path);
