@@ -1,26 +1,42 @@
+use std::{
+    fs::File,
+    io::BufReader,
+    path::Path,
+};
+
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub(crate) struct Position {
-    x: usize,
     y: usize,
+    x: usize,
 }
 
 impl Position {
-    pub(crate) fn new(x: usize, y: usize) -> Self {
-        Self {
-            x,
-            y
-        }
+    pub(crate) fn new(y: usize, x: usize) -> Self {
+        Self { y, x }
     }
 
     pub(crate) fn get_position(&self) -> (usize, usize) {
-        (self.x, self.y)
+        (self.y, self.x)
     }
 }
-
 
 pub(crate) struct House {
     pub(crate) house_details: HouseDetails,
     pub(crate) environment_features: EnvironmentFeatures,
+}
 
+impl House {
+    pub(crate) fn new(
+        house_details: HouseDetails,
+        environment_features: EnvironmentFeatures,
+    ) -> Self {
+        Self {
+            house_details,
+            environment_features,
+        }
+    }
 }
 
 pub(crate) struct HouseDetails {
@@ -53,7 +69,15 @@ impl HouseDetails {
         self.true_price
     }
 
-    pub(crate) fn new(position: Position, bedrooms: u8, bathrooms: u8, size: f64, land_size: f64, age: u16, true_price: f64) -> Self {
+    pub(crate) fn new(
+        position: Position,
+        bedrooms: u8,
+        bathrooms: u8,
+        size: f64,
+        land_size: f64,
+        age: u16,
+        true_price: f64,
+    ) -> Self {
         Self {
             position,
             bedrooms,
@@ -64,7 +88,7 @@ impl HouseDetails {
             true_price,
         }
     }
-} 
+}
 
 pub(crate) struct EnvironmentFeatures {
     schools_within_10km: u8,
@@ -84,7 +108,6 @@ pub(crate) struct EnvironmentFeatures {
     factories_within_30km: u8,
     factory_positions: Vec<Position>,
     average_factory_distance_capped: f32,
-
 }
 
 impl EnvironmentFeatures {
@@ -105,7 +128,6 @@ impl EnvironmentFeatures {
             factories_within_30km: 0,
             factory_positions: Vec::new(),
             average_factory_distance_capped: 30.0,
-        
         }
     }
 
@@ -137,12 +159,15 @@ impl EnvironmentFeatures {
         self.average_factory_distance_capped = new_avg;
     }
 
-    pub(crate) fn calculate_average_distance(building_positions: &Vec<Position>, position: &Position) -> f32 {
+    pub(crate) fn calculate_average_distance(
+        building_positions: &Vec<Position>,
+        position: &Position,
+    ) -> f32 {
         // Using manhattan distance
         let mut dx;
         let mut dy;
         let mut total_distance: f32 = 0.0;
-        
+
         for build_position in building_positions {
             dx = position.x.abs_diff(build_position.x);
             dy = position.y.abs_diff(build_position.y);
@@ -152,23 +177,40 @@ impl EnvironmentFeatures {
         let building_count: f32 = building_positions.len() as f32;
         let average_distance = total_distance / building_count;
         average_distance
-
     }
 }
 
+pub(crate) fn read_vector_of_positions(path: &Path) -> Option<Vec<Position>> {
+    let file = File::open(path).ok()?;
+    let buffReader = BufReader::new(file);
+    serde_json::from_reader(buffReader).ok()
+}
+
+pub(crate) fn display_vec_of_positions(positions: &Vec<Position>) {
+    for pos in positions {
+        println!("y: {} x: {}", pos.y, pos.x);
+    }
+}
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use std::path::PathBuf;
 
+    use super::*;
 
     #[test]
     fn test_calculate_average_distance() {
-        let building_positions = vec![Position::new(10, 10), Position::new(5, 5), Position::new(2, 4)];
+        let building_positions = vec![
+            Position::new(10, 10),
+            Position::new(5, 5),
+            Position::new(2, 4),
+        ];
         let parent_position = Position::new(5, 5);
 
-        assert_eq!(14.0/3.0, EnvironmentFeatures::calculate_average_distance(&building_positions, &parent_position));
-        
+        assert_eq!(
+            14.0 / 3.0,
+            EnvironmentFeatures::calculate_average_distance(&building_positions, &parent_position)
+        );
     }
 
     #[test]
@@ -189,12 +231,11 @@ mod tests {
         env_features.add_shop(Position::new(5, 6), &parent_position);
         env_features.add_shop(Position::new(15, 20), &parent_position);
 
-        assert_eq!(28.0/3.0, env_features.average_shop_distance_capped);
-
+        assert_eq!(28.0 / 3.0, env_features.average_shop_distance_capped);
     }
 
     #[test]
-     fn test_add_factory() {
+    fn test_add_factory() {
         let mut env_features = EnvironmentFeatures::new();
         let parent_position = Position::new(8, 8);
         env_features.add_factory(Position::new(10, 10), &parent_position);
@@ -203,12 +244,11 @@ mod tests {
         env_features.add_factory(Position::new(5, 6), &parent_position);
         env_features.add_factory(Position::new(15, 20), &parent_position);
 
-        assert_eq!(28.0/3.0, env_features.average_factory_distance_capped);
-
+        assert_eq!(28.0 / 3.0, env_features.average_factory_distance_capped);
     }
-    
+
     #[test]
-      fn test_add_school() {
+    fn test_add_school() {
         let mut env_features = EnvironmentFeatures::new();
         let parent_position = Position::new(8, 8);
         env_features.add_school(Position::new(10, 10), &parent_position);
@@ -217,8 +257,7 @@ mod tests {
         env_features.add_school(Position::new(10, 10), &parent_position);
         env_features.add_school(Position::new(0, 8), &parent_position);
 
-        assert_eq!(16.0/3.0, env_features.average_school_distance_capped);
-
+        assert_eq!(16.0 / 3.0, env_features.average_school_distance_capped);
     }
 
     #[test]
@@ -232,5 +271,21 @@ mod tests {
         env_features.add_park(Position::new(2, 25), &parent_position);
 
         assert_eq!(17.0, env_features.average_park_distance_capped);
+    }
+
+    #[test]
+    fn test_read_vector_of_positions() {
+        let mut path = PathBuf::from("test_vectors");
+        path.push("vec_positions1.json");
+
+        let vector = read_vector_of_positions(&path).expect("failed to read vector of positions");
+
+        display_vec_of_positions(&vector);
+
+        assert_eq!(vector[0].y, 0);
+        assert_eq!(vector[0].x, 0);
+
+        assert_eq!(vector[6].y, 5);
+        assert_eq!(vector[6].x, 0);
     }
 }
