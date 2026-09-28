@@ -1,10 +1,50 @@
 use serde::{Deserialize, Serialize};
+use std::cmp::Ordering;
 use std::{fs::File, io::BufReader, path::Path};
+
+#[derive(Debug, Default)]
+pub(crate) struct HouseStatistics {
+    range: f64,
+    mean: f64,
+    median: f64,
+    low: f64,
+    high: f64,
+    sd: f64,
+    count: u32,
+}
+
+impl HouseStatistics {
+    pub(crate) fn new(
+        range: f64,
+        mean: f64,
+        median: f64,
+        low: f64,
+        high: f64,
+        sd: f64,
+        count: u32,
+    ) -> Self {
+        Self {
+            range,
+            mean,
+            median,
+            low,
+            high,
+            sd,
+            count,
+        }
+    }
+}
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub(crate) struct Position {
     y: usize,
     x: usize,
+}
+
+impl PartialEq for Position {
+    fn eq(&self, other: &Self) -> bool {
+        self.x == other.x && self.y == other.y
+    }
 }
 
 impl Position {
@@ -32,6 +72,30 @@ impl House {
             environment_features,
         }
     }
+
+    pub(crate) fn get_true_price(&self) -> f64 {
+        self.house_details.get_house_price()
+    }
+}
+
+impl PartialEq for House {
+    fn eq(&self, other: &Self) -> bool {
+        self.house_details == other.house_details
+    }
+}
+
+impl Eq for House {}
+
+impl PartialOrd for House {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.house_details.partial_cmp(&other.house_details)
+    }
+}
+
+impl Ord for House {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.house_details.cmp(&other.house_details)
+    }
 }
 
 pub(crate) struct HouseDetails {
@@ -44,6 +108,27 @@ pub(crate) struct HouseDetails {
     true_price: f64,
 }
 
+impl PartialEq for HouseDetails {
+    fn eq(&self, other: &Self) -> bool {
+        self.true_price == other.true_price
+    }
+}
+
+impl Eq for HouseDetails {}
+
+impl PartialOrd for HouseDetails {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.true_price.partial_cmp(&other.true_price)
+    }
+}
+
+impl Ord for HouseDetails {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.true_price
+            .partial_cmp(&other.true_price)
+            .expect("Could not compare house details")
+    }
+}
 impl HouseDetails {
     pub(crate) fn get_bedrooms(&self) -> u8 {
         self.bedrooms
