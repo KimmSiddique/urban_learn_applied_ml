@@ -1,6 +1,7 @@
-use crate::house::{EnvironmentFeatures, House, HouseDetails, Position};
+use crate::house::{EnvironmentFeatures, House, HouseDetails, HouseStatistics, Position};
 use crate::map::{BuildingType, create_map};
 use rand;
+use smartcore::numbers::floatnum::FloatNumber;
 
 const RADIUS: usize = 30;
 
@@ -17,6 +18,8 @@ pub(crate) struct SimulationManager {
     height: usize,
 
     houses: Vec<House>,
+
+    house_statistics: Option<HouseStatistics>,
 }
 
 impl SimulationManager {
@@ -46,6 +49,7 @@ impl SimulationManager {
             factory_positions: new_factory_positions,
             width: width,
             height: height,
+            house_statistics: None,
 
             houses: Vec::new(),
         }
@@ -211,6 +215,64 @@ impl SimulationManager {
             house_evaluation_price,
         )
     }
+
+    pub(crate) fn display_house_details(&self) {
+        for (index, house) in self.houses.iter().enumerate() {
+            println!(
+                "House #{} | Price: ${}",
+                index + 1,
+                house.house_details.get_house_price()
+            );
+        }
+    }
+
+    pub(crate) fn calculate_house_statistics(&mut self) -> Option<HouseStatistics> {
+        let house_count = self.houses.len();
+
+        if house_count < 3 {
+            println!("Not enough houses!");
+            return None;
+        }
+
+        self.houses.sort(); // Sort the houses first so that we can get what we need in which order
+
+        // get house count first as that is the easiest
+
+        let high = self.houses.last().unwrap().get_true_price();
+        let low = self.houses.first().unwrap().get_true_price();
+        let range = high - low;
+
+        let total: f64 = self.houses.iter().map(|house| house.get_true_price()).sum();
+
+        let mean = total / house_count as f64;
+
+        // Sum of squared differences
+        let sosd = self.houses.iter().fold(0.0, |acc, house| {
+            let difference = house.get_true_price() - mean;
+            acc + difference.square()
+        });
+
+        let median = {
+            if house_count % 2 == 1 {
+                self.houses[house_count / 2].get_true_price()
+            } else {
+                let middle = house_count / 2;
+                (self.houses[middle - 1].get_true_price() + self.houses[middle].get_true_price())
+                    / 2.0
+            }
+        };
+
+        let sd = f64::sqrt(sosd / (house_count - 1) as f64);
+        Some(HouseStatistics::new(
+            range,
+            mean,
+            median,
+            low,
+            high,
+            sd,
+            house_count as u32,
+        ))
+    }
 }
 
 #[cfg(test)]
@@ -339,6 +401,7 @@ mod tests {
                 combined_house_vec[0].environment_features.get_num_shops(),
                 16
             );
+            println!("House price: {:.2}", combined_house_vec[0].get_true_price());
             assert_eq!(
                 combined_house_vec[0]
                     .environment_features
