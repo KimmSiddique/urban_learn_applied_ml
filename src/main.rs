@@ -1,7 +1,6 @@
-mod house;
-mod map;
-mod simulation_manager;
-mod statistics_manager;
+pub(crate) mod house_properties;
+pub(crate) mod simulation;
+pub(crate) mod statistics;
 
 fn main() {
     println!("Program is running!");
