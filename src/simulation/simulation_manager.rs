@@ -1,7 +1,7 @@
-use crate::house::{EnvironmentFeatures, House, HouseDetails, HouseStatistics, Position};
-use crate::map::{BuildingType, create_map};
 use rand;
-use smartcore::numbers::floatnum::FloatNumber;
+use crate::house_properties::{house::House, building_type::BuildingType, environment_features::EnvironmentFeatures, house_details::HouseDetails, position::*};
+use crate::statistics::house_statistics::HouseStatistics;
+use crate::simulation::map::create_map;
 
 const RADIUS: usize = 30;
 
@@ -55,7 +55,7 @@ impl SimulationManager {
         }
     }
 
-    fn process_house(
+    pub(crate) fn process_house(
         width: usize,
         height: usize,
         house_positions: &mut [Position],
@@ -225,62 +225,12 @@ impl SimulationManager {
             );
         }
     }
-
-    pub(crate) fn calculate_house_statistics(&mut self) -> Option<HouseStatistics> {
-        let house_count = self.houses.len();
-
-        if house_count < 3 {
-            println!("Not enough houses!");
-            return None;
-        }
-
-        self.houses.sort(); // Sort the houses first so that we can get what we need in which order
-
-        // get house count first as that is the easiest
-
-        let high = self.houses.last().unwrap().get_true_price();
-        let low = self.houses.first().unwrap().get_true_price();
-        let range = high - low;
-
-        let total: f64 = self.houses.iter().map(|house| house.get_true_price()).sum();
-
-        let mean = total / house_count as f64;
-
-        // Sum of squared differences
-        let sosd = self.houses.iter().fold(0.0, |acc, house| {
-            let difference = house.get_true_price() - mean;
-            acc + difference.square()
-        });
-
-        let median = {
-            if house_count % 2 == 1 {
-                self.houses[house_count / 2].get_true_price()
-            } else {
-                let middle = house_count / 2;
-                (self.houses[middle - 1].get_true_price() + self.houses[middle].get_true_price())
-                    / 2.0
-            }
-        };
-
-        let sd = f64::sqrt(sosd / (house_count - 1) as f64);
-        Some(HouseStatistics::new(
-            range,
-            mean,
-            median,
-            low,
-            high,
-            sd,
-            house_count as u32,
-        ))
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use std::path::PathBuf;
-
-    use crate::{house::read_vector_of_positions, map::construct_map_from_file};
-
+    use crate::simulation::map::construct_map_from_file;
     use super::*;
 
     #[test]
@@ -425,4 +375,5 @@ mod tests {
             );
         });
     }
+
 }

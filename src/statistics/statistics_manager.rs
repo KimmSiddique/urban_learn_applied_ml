@@ -3,34 +3,12 @@ use std::{
     fs::create_dir_all,
     path::{Path, PathBuf},
 };
+use plotters::prelude::*;
+use crate::{house_properties::house::House, statistics::histogram_bin::HistogramBin};
+
 
 const WIDTH: u32 = 1000;
 const HEIGHT: u32 = 600;
-
-use crate::house::House;
-use plotters::prelude::*;
-
-pub(crate) struct HistogramBin {
-    start: usize,
-    end: usize,
-    count: usize,
-}
-
-impl HistogramBin {
-    pub(crate) fn new(start: usize, end: usize, count: usize) -> Self {
-        Self { start, end, count }
-    }
-
-    pub(crate) fn get_start(&self) -> usize {
-        self.start
-    }
-    pub(crate) fn get_end(&self) -> usize {
-        self.end
-    }
-    pub(crate) fn get_count(&self) -> usize {
-        self.count
-    }
-}
 
 pub(crate) fn calculate_bins(house_vec: &Vec<House>) -> Vec<HistogramBin> {
     let mut histogram_bins = Vec::new();
@@ -117,7 +95,7 @@ fn draw_histogram(
         .margin(20)
         .x_label_area_size(50)
         .y_label_area_size(50)
-        .build_cartesian_2d((0..1_500_000).with_key_points(key_points), 0..50)?;
+        .build_cartesian_2d((0..1_500_000).with_key_points(key_points), 0..600)?;
 
     chart
         .configure_mesh()
@@ -146,6 +124,9 @@ fn draw_histogram(
 
 #[cfg(test)]
 mod tests {
+
+    use crate::simulation::{map::create_map, simulation_manager::SimulationManager};
+    use crate::statistics::house_statistics::HouseStatistics;
     use super::*;
 
     #[test]
@@ -165,5 +146,19 @@ mod tests {
         histogram_bins.push(HistogramBin::new(1_500_000, usize::MAX, 10));
 
         draw_histogram(&histogram_bins, "test_plot1").expect("Could not create histogram image");
+    }
+
+    #[test]
+    fn test_draw_histogram_for_larger_maps() {
+        let mut house_positions = vec![];
+        let mut slice = [&mut house_positions];
+        let map = create_map(100, 100, &mut slice);
+
+        let mut houses = SimulationManager::process_house(100, 100, &mut house_positions, &map);
+        let bins = calculate_bins(&houses);
+
+        draw_histogram(&bins, "plot100times100").expect("Could not draw histogram");
+        let statistics = HouseStatistics::calculate_house_statistics(&mut houses).unwrap();
+        statistics.display_statistics();
     }
 }

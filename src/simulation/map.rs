@@ -1,24 +1,12 @@
 // This will contain the map, which I will design, initially will be an empty 2D Vector of types enums
 
-use crate::house::Position;
 use rand;
-use serde::{Deserialize, Serialize};
+use crate::house_properties::{building_type::BuildingType, position::Position};
 use std::{
     fs::{File, create_dir_all},
     io::{BufReader, BufWriter, Write},
     path::{Path, PathBuf},
 };
-
-#[repr(u8)]
-#[derive(Clone, Copy, PartialEq, Serialize, Deserialize, Debug)]
-pub(crate) enum BuildingType {
-    Empty = 0,
-    House = 1,
-    School = 2,
-    Shop = 3,
-    Park = 4,
-    Factory = 5,
-}
 
 pub(crate) fn create_map(
     rows: usize,
@@ -26,6 +14,7 @@ pub(crate) fn create_map(
     building_positions: &mut [&mut Vec<Position>],
 ) -> Vec<Vec<BuildingType>> {
     let mut map = vec![vec![BuildingType::Empty; cols]; rows];
+    let building_positions_len = building_positions.len();
 
     let mut probability;
 
@@ -36,16 +25,16 @@ pub(crate) fn create_map(
             if probability >= 0 && probability < 20 {
                 *cell = BuildingType::House;
                 building_positions[0].push(Position::new(y_pos, x_pos));
-            } else if probability >= 20 && probability < 30 {
+            } else if probability >= 20 && probability < 30 && building_positions_len >= 2 {
                 *cell = BuildingType::School;
                 building_positions[1].push(Position::new(y_pos, x_pos));
-            } else if probability >= 30 && probability < 35 {
+            } else if probability >= 30 && probability < 35 && building_positions_len >= 3 {
                 *cell = BuildingType::Shop;
                 building_positions[2].push(Position::new(y_pos, x_pos));
-            } else if probability >= 35 && probability < 38 {
+            } else if probability >= 35 && probability < 38 && building_positions_len >= 4 {
                 *cell = BuildingType::Park;
                 building_positions[3].push(Position::new(y_pos, x_pos));
-            } else if probability >= 38 && probability < 45 {
+            } else if probability >= 38 && probability < 45 && building_positions_len >= 5 {
                 *cell = BuildingType::Factory;
                 building_positions[4].push(Position::new(y_pos, x_pos));
             }
@@ -139,6 +128,7 @@ mod tests {
     #[test]
     fn test_construct_map_after_load_map_to_file() {
         // Assuming you ran the test_load_map_to_file() function, there should exist some saved maps...
+        test_load_map_to_file();
         let mut map_path = PathBuf::from("saved_maps");
         map_path.push("saved_map1.json");
         let map = construct_map_from_file(&map_path).expect("Could not construct map");
