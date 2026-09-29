@@ -1,5 +1,7 @@
+use crate::house_properties::{
+    environment_features::EnvironmentFeatures, house_details::HouseDetails,
+};
 use std::cmp::Ordering;
-use crate::house_properties::{house_details::HouseDetails, environment_features::EnvironmentFeatures};
 
 pub(crate) struct House {
     pub(crate) house_details: HouseDetails,
@@ -44,9 +46,9 @@ impl Ord for House {
 
 #[cfg(test)]
 mod tests {
-    use std::path::PathBuf;
     use super::*;
     use crate::house_properties::position::*;
+    use std::path::PathBuf;
 
     #[test]
     fn test_calculate_average_distance() {

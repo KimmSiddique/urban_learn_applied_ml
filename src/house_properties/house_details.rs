@@ -1,5 +1,5 @@
-use std::cmp::Ordering;
 use crate::house_properties::position::Position;
+use std::cmp::Ordering;
 
 pub(crate) struct HouseDetails {
     position: Position,

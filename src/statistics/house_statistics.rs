@@ -1,5 +1,5 @@
-use smartcore::numbers::floatnum::FloatNumber;
 use crate::house_properties::house::House;
+use smartcore::numbers::floatnum::FloatNumber;
 
 #[derive(Debug, Default)]
 pub(crate) struct HouseStatistics {
@@ -64,8 +64,7 @@ impl HouseStatistics {
                 houses[house_count / 2].get_true_price()
             } else {
                 let middle = house_count / 2;
-                (houses[middle - 1].get_true_price() + houses[middle].get_true_price())
-                    / 2.0
+                (houses[middle - 1].get_true_price() + houses[middle].get_true_price()) / 2.0
             }
         };
 

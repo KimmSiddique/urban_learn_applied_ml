@@ -1,7 +1,10 @@
-use rand;
-use crate::house_properties::{house::House, building_type::BuildingType, environment_features::EnvironmentFeatures, house_details::HouseDetails, position::*};
-use crate::statistics::house_statistics::HouseStatistics;
+use crate::house_properties::{
+    building_type::BuildingType, environment_features::EnvironmentFeatures, house::House,
+    house_details::HouseDetails, position::*,
+};
 use crate::simulation::map::create_map;
+use crate::statistics::house_statistics::HouseStatistics;
+use rand;
 
 const RADIUS: usize = 30;
 
@@ -229,9 +232,9 @@ impl SimulationManager {
 
 #[cfg(test)]
 mod tests {
-    use std::path::PathBuf;
-    use crate::simulation::map::construct_map_from_file;
     use super::*;
+    use crate::simulation::map::construct_map_from_file;
+    use std::path::PathBuf;
 
     #[test]
     fn test_generate_random_houses() {
@@ -375,5 +378,4 @@ mod tests {
             );
         });
     }
-
 }

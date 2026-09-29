@@ -1,7 +1,7 @@
 // This will contain the map, which I will design, initially will be an empty 2D Vector of types enums
 
-use rand;
 use crate::house_properties::{building_type::BuildingType, position::Position};
+use rand;
 use std::{
     fs::{File, create_dir_all},
     io::{BufReader, BufWriter, Write},

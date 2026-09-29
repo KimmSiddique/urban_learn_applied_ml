@@ -1,11 +1,10 @@
+use crate::{house_properties::house::House, statistics::histogram_bin::HistogramBin};
+use plotters::prelude::*;
 use std::{
     error::Error,
     fs::create_dir_all,
     path::{Path, PathBuf},
 };
-use plotters::prelude::*;
-use crate::{house_properties::house::House, statistics::histogram_bin::HistogramBin};
-
 
 const WIDTH: u32 = 1000;
 const HEIGHT: u32 = 600;
@@ -125,9 +124,9 @@ fn draw_histogram(
 #[cfg(test)]
 mod tests {
 
+    use super::*;
     use crate::simulation::{map::create_map, simulation_manager::SimulationManager};
     use crate::statistics::house_statistics::HouseStatistics;
-    use super::*;
 
     #[test]
     fn test_draw_histogram() {

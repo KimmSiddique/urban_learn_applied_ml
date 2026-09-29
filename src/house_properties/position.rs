@@ -1,5 +1,5 @@
-use std::{fs::File, io::BufReader, path::Path};
 use serde::{Deserialize, Serialize};
+use std::{fs::File, io::BufReader, path::Path};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub(crate) struct Position {
