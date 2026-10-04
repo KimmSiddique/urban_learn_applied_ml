@@ -5,8 +5,8 @@ pub(crate) struct HouseDetails {
     position: Position,
     bedrooms: u8,
     bathrooms: u8,
-    living_area_size: f64,
-    land_size: f64,
+    living_area_size: u32,
+    land_size: u32,
     garage_spaces: u8,
     house_quality: u8, // Has to be between 1-10
     house_type: HouseType,
@@ -43,10 +43,10 @@ impl HouseDetails {
     pub(crate) fn get_bathrooms(&self) -> u8 {
         self.bathrooms
     }
-    pub(crate) fn get_living_area_size(&self) -> f64 {
+    pub(crate) fn get_living_area_size(&self) -> u32 {
         self.living_area_size
     }
-    pub(crate) fn get_land_size(&self) -> f64 {
+    pub(crate) fn get_land_size(&self) -> u32 {
         self.land_size
     }
     pub(crate) fn get_house_age(&self) -> u16 {
@@ -72,8 +72,8 @@ impl HouseDetails {
         position: Position,
         bedrooms: u8,
         bathrooms: u8,
-        living_area_size: f64,
-        land_size: f64,
+        living_area_size: u32,
+        land_size: u32,
         garage_spaces: u8,
         house_quality: u8, // Has to be between 1-10
         house_type: HouseType,
@@ -91,6 +91,557 @@ impl HouseDetails {
             house_type,
             age,
             sale_price,
+        }
+    }
+
+    pub(crate) fn generate_random_bedrooms() -> u8 {
+        unimplemented!()
+    }
+
+    pub(crate) fn generate_random_land_size(housetype: HouseType) -> u32 {
+        let prob = rand::random_range(0..100);
+        let landsize;
+
+        match housetype {
+            HouseType::Detached => {
+                if (0..10).contains(&prob) {
+                    landsize = rand::random_range(250..400);
+                } else if (10..40).contains(&prob) {
+                    landsize = rand::random_range(400..600);
+                } else if (40..70).contains(&prob) {
+                    landsize = rand::random_range(600..800);
+                } else if (70..85).contains(&prob) {
+                    landsize = rand::random_range(800..1000)
+                } else if (85..95).contains(&prob) {
+                    landsize = rand::random_range(1000..1500);
+                } else {
+                    landsize = rand::random_range(1500..2500);
+                }
+            }
+
+            HouseType::SemiDetached => {
+                if (0..15).contains(&prob) {
+                    landsize = rand::random_range(250..400);
+                } else if (15..55).contains(&prob) {
+                    landsize = rand::random_range(400..600);
+                } else if (55..85).contains(&prob) {
+                    landsize = rand::random_range(600..800);
+                } else if (85..97).contains(&prob) {
+                    landsize = rand::random_range(800..1000)
+                } else {
+                    landsize = rand::random_range(1000..1500);
+                }
+            }
+
+            HouseType::TownHouse => {
+                if (0..95).contains(&prob) {
+                    landsize = rand::random_range(400..600);
+                } else {
+                    landsize = rand::random_range(600..800);
+                }
+            }
+        }
+
+        landsize
+    }
+
+    pub(crate) fn generate_living_area_size(landsize: u32, housetype: HouseType) -> u32 {
+        let prob = rand::random_range(0..100);
+
+        match housetype {
+            HouseType::Detached => {
+                if (250..400).contains(&landsize) {
+                    if prob < 15 {
+                        rand::random_range(60..90)
+                    } else if prob < 55 {
+                        rand::random_range(90..120)
+                    } else if prob < 90 {
+                        rand::random_range(120..160)
+                    } else {
+                        rand::random_range(160..191)
+                    }
+                } else if (400..600).contains(&landsize) {
+                    if prob < 10 {
+                        rand::random_range(70..100)
+                    } else if prob < 45 {
+                        rand::random_range(100..140)
+                    } else if prob < 85 {
+                        rand::random_range(140..180)
+                    } else {
+                        rand::random_range(180..221)
+                    }
+                } else if (600..800).contains(&landsize) {
+                    if prob < 8 {
+                        rand::random_range(80..110)
+                    } else if prob < 30 {
+                        rand::random_range(110..140)
+                    } else if prob < 70 {
+                        rand::random_range(140..180)
+                    } else if prob < 92 {
+                        rand::random_range(180..220)
+                    } else {
+                        rand::random_range(220..281)
+                    }
+                } else if (800..1000).contains(&landsize) {
+                    if prob < 7 {
+                        rand::random_range(90..120)
+                    } else if prob < 27 {
+                        rand::random_range(120..160)
+                    } else if prob < 65 {
+                        rand::random_range(160..200)
+                    } else if prob < 90 {
+                        rand::random_range(200..250)
+                    } else {
+                        rand::random_range(250..321)
+                    }
+                } else if (1000..1500).contains(&landsize) {
+                    if prob < 5 {
+                        rand::random_range(90..130)
+                    } else if prob < 25 {
+                        rand::random_range(130..180)
+                    } else if prob < 60 {
+                        rand::random_range(180..230)
+                    } else if prob < 88 {
+                        rand::random_range(230..300)
+                    } else {
+                        rand::random_range(300..381)
+                    }
+                } else {
+                    // 1500+ m²
+                    if prob < 5 {
+                        rand::random_range(100..150)
+                    } else if prob < 20 {
+                        rand::random_range(150..200)
+                    } else if prob < 50 {
+                        rand::random_range(200..270)
+                    } else if prob < 80 {
+                        rand::random_range(270..350)
+                    } else {
+                        rand::random_range(350..451)
+                    }
+                }
+            }
+
+            HouseType::SemiDetached => {
+                if (250..400).contains(&landsize) {
+                    if prob < 15 {
+                        rand::random_range(60..90)
+                    } else if prob < 60 {
+                        rand::random_range(90..120)
+                    } else if prob < 90 {
+                        rand::random_range(120..150)
+                    } else {
+                        rand::random_range(150..181)
+                    }
+                } else if (400..600).contains(&landsize) {
+                    if prob < 10 {
+                        rand::random_range(70..100)
+                    } else if prob < 45 {
+                        rand::random_range(100..130)
+                    } else if prob < 85 {
+                        rand::random_range(130..170)
+                    } else {
+                        rand::random_range(170..211)
+                    }
+                } else if (600..800).contains(&landsize) {
+                    if prob < 10 {
+                        rand::random_range(80..110)
+                    } else if prob < 45 {
+                        rand::random_range(110..150)
+                    } else if prob < 85 {
+                        rand::random_range(150..190)
+                    } else {
+                        rand::random_range(190..231)
+                    }
+                } else if (800..1000).contains(&landsize) {
+                    if prob < 10 {
+                        rand::random_range(90..130)
+                    } else if prob < 45 {
+                        rand::random_range(130..170)
+                    } else if prob < 85 {
+                        rand::random_range(170..210)
+                    } else {
+                        rand::random_range(210..261)
+                    }
+                } else {
+                    if prob < 10 {
+                        rand::random_range(100..140)
+                    } else if prob < 40 {
+                        rand::random_range(140..180)
+                    } else if prob < 80 {
+                        rand::random_range(180..230)
+                    } else {
+                        rand::random_range(230..301)
+                    }
+                }
+            }
+
+            HouseType::TownHouse => {
+                if (100..250).contains(&landsize) {
+                    if prob < 15 {
+                        rand::random_range(50..80)
+                    } else if prob < 50 {
+                        rand::random_range(80..110)
+                    } else if prob < 85 {
+                        rand::random_range(110..140)
+                    } else {
+                        rand::random_range(140..181)
+                    }
+                } else if (250..400).contains(&landsize) {
+                    if prob < 10 {
+                        rand::random_range(60..90)
+                    } else if prob < 40 {
+                        rand::random_range(90..120)
+                    } else if prob < 80 {
+                        rand::random_range(120..160)
+                    } else {
+                        rand::random_range(160..201)
+                    }
+                } else if (400..600).contains(&landsize) {
+                    if prob < 10 {
+                        rand::random_range(70..100)
+                    } else if prob < 40 {
+                        rand::random_range(100..140)
+                    } else if prob < 80 {
+                        rand::random_range(140..180)
+                    } else {
+                        rand::random_range(180..221)
+                    }
+                } else if (600..800).contains(&landsize) {
+                    if prob < 10 {
+                        rand::random_range(90..130)
+                    } else if prob < 45 {
+                        rand::random_range(130..170)
+                    } else if prob < 85 {
+                        rand::random_range(170..210)
+                    } else {
+                        rand::random_range(210..251)
+                    }
+                } else {
+                    if prob < 10 {
+                        rand::random_range(100..140)
+                    } else if prob < 40 {
+                        rand::random_range(140..180)
+                    } else if prob < 80 {
+                        rand::random_range(180..230)
+                    } else {
+                        rand::random_range(230..281)
+                    }
+                }
+            }
+        }
+    }
+
+    pub(crate) fn generate_bedrooms(living_area: u32) -> u8 {
+        let prob = rand::random_range(0..100);
+
+        if (50..80).contains(&living_area) {
+            if prob < 60 {
+                1
+            } else if prob < 95 {
+                2
+            } else {
+                3
+            }
+        } else if (80..120).contains(&living_area) {
+            if prob < 10 {
+                1
+            } else if prob < 65 {
+                2
+            } else if prob < 95 {
+                3
+            } else {
+                4
+            }
+        } else if (120..160).contains(&living_area) {
+            if prob < 15 {
+                2
+            } else if prob < 70 {
+                3
+            } else if prob < 95 {
+                4
+            } else {
+                5
+            }
+        } else if (160..200).contains(&living_area) {
+            if prob < 5 {
+                2
+            } else if prob < 35 {
+                3
+            } else if prob < 85 {
+                4
+            } else {
+                5
+            }
+        } else if (200..250).contains(&living_area) {
+            if prob < 15 {
+                3
+            } else if prob < 60 {
+                4
+            } else if prob < 90 {
+                5
+            } else {
+                6
+            }
+        } else if (250..300).contains(&living_area) {
+            if prob < 5 {
+                3
+            } else if prob < 30 {
+                4
+            } else if prob < 70 {
+                5
+            } else if prob < 95 {
+                6
+            } else {
+                7
+            }
+        } else if (300..400).contains(&living_area) {
+            if prob < 15 {
+                4
+            } else if prob < 50 {
+                5
+            } else if prob < 80 {
+                6
+            } else if prob < 95 {
+                7
+            } else {
+                8
+            }
+        } else {
+            // 400+ m²
+            if prob < 5 {
+                4
+            } else if prob < 25 {
+                5
+            } else if prob < 55 {
+                6
+            } else if prob < 80 {
+                7
+            } else if prob < 95 {
+                8
+            } else {
+                9
+            }
+        }
+    }
+
+    pub(crate) fn generate_house_quality() -> u8 {
+        let prob = rand::random_range(0..100);
+
+        if prob < 1 {
+            1
+        } else if prob < 3 {
+            2
+        } else if prob < 9 {
+            3
+        } else if prob < 21 {
+            4
+        } else if prob < 43 {
+            5
+        } else if prob < 68 {
+            6
+        } else if prob < 86 {
+            7
+        } else if prob < 95 {
+            8
+        } else if prob < 99 {
+            9
+        } else {
+            10
+        }
+    }
+
+    pub(crate) fn generate_bathrooms(bedrooms: u8, house_quality: u8) -> u8 {
+        let prob = rand::random_range(0..100);
+
+        let mut bathrooms = match bedrooms {
+            0..=1 => 1,
+
+            2 => {
+                if prob < 75 {
+                    1
+                } else {
+                    2
+                }
+            }
+
+            3 => {
+                if prob < 50 {
+                    1
+                } else if prob < 95 {
+                    2
+                } else {
+                    3
+                }
+            }
+
+            4 => {
+                if prob < 15 {
+                    1
+                } else if prob < 70 {
+                    2
+                } else if prob < 95 {
+                    3
+                } else {
+                    4
+                }
+            }
+
+            5 => {
+                if prob < 10 {
+                    2
+                } else if prob < 60 {
+                    3
+                } else if prob < 90 {
+                    4
+                } else {
+                    5
+                }
+            }
+
+            _ => {
+                if prob < 15 {
+                    2
+                } else if prob < 55 {
+                    3
+                } else if prob < 85 {
+                    4
+                } else {
+                    5
+                }
+            }
+        };
+
+        // High-quality houses have a greater chance of an extra bathroom.
+        if house_quality >= 8 && rand::random_range(0..100) < 30 {
+            bathrooms += 1;
+        }
+
+        // Poor-quality houses occasionally have fewer bathrooms.
+        if house_quality <= 3 && bathrooms > 1 && rand::random_range(0..100) < 25 {
+            bathrooms -= 1;
+        }
+
+        bathrooms
+    }
+
+    pub(crate) fn generate_garage_spaces(
+        land_size: u32,
+        living_area_size: u32,
+        house_type: HouseType,
+    ) -> u8 {
+        let prob = rand::random_range(0..100);
+
+        let mut spaces = match land_size {
+            0..250 => {
+                if prob < 60 {
+                    0
+                } else {
+                    1
+                }
+            }
+
+            250..400 => {
+                if prob < 25 {
+                    0
+                } else if prob < 85 {
+                    1
+                } else {
+                    2
+                }
+            }
+
+            400..600 => {
+                if prob < 10 {
+                    0
+                } else if prob < 55 {
+                    1
+                } else if prob < 95 {
+                    2
+                } else {
+                    3
+                }
+            }
+
+            600..800 => {
+                if prob < 5 {
+                    0
+                } else if prob < 30 {
+                    1
+                } else if prob < 85 {
+                    2
+                } else {
+                    3
+                }
+            }
+
+            800..1000 => {
+                if prob < 15 {
+                    1
+                } else if prob < 70 {
+                    2
+                } else if prob < 95 {
+                    3
+                } else {
+                    4
+                }
+            }
+
+            1000..1500 => {
+                if prob < 10 {
+                    1
+                } else if prob < 55 {
+                    2
+                } else if prob < 90 {
+                    3
+                } else {
+                    4
+                }
+            }
+
+            _ => {
+                if prob < 10 {
+                    1
+                } else if prob < 45 {
+                    2
+                } else if prob < 80 {
+                    3
+                } else {
+                    4
+                }
+            }
+        };
+
+        // Large houses are somewhat more likely to need more garage capacity.
+        if living_area_size >= 300 && spaces < 4 && rand::random_range(0..100) < 25 {
+            spaces += 1;
+        }
+
+        // Townhouses are less likely to have large garages.
+        if house_type == HouseType::TownHouse && spaces > 1 && rand::random_range(0..100) < 50 {
+            spaces -= 1;
+        }
+
+        spaces
+    }
+
+    pub(crate) fn generate_age() -> u16 {
+        let prob = rand::random_range(0..100);
+
+        if prob < 8 {
+            rand::random_range(0..=5)
+        } else if prob < 23 {
+            rand::random_range(6..=15)
+        } else if prob < 48 {
+            rand::random_range(16..=30)
+        } else if prob < 73 {
+            rand::random_range(31..=50)
+        } else if prob < 88 {
+            rand::random_range(51..=75)
+        } else if prob < 96 {
+            rand::random_range(76..=100)
+        } else {
+            rand::random_range(101..=150)
         }
     }
 }
