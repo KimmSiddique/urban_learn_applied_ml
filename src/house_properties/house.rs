@@ -20,7 +20,7 @@ impl House {
     }
 
     pub(crate) fn get_true_price(&self) -> f64 {
-        self.house_details.get_house_price()
+        self.house_details.get_house_sale_price()
     }
 }
 
