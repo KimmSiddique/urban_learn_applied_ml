@@ -4,7 +4,6 @@ use crate::house_properties::{
 };
 use crate::simulation::map::create_map;
 use crate::statistics::house_statistics::HouseStatistics;
-use rand;
 
 const RADIUS: usize = 30;
 
@@ -158,7 +157,7 @@ impl SimulationManager {
             }
 
             let (house_y, house_x) = house_pos.get_position();
-            let house_dets = Self::generate_random_house_details(
+            let house_dets = HouseDetails::generate_random_house_details(
                 Position::new(house_y, house_x),
                 house_evaluation_price,
             );
@@ -167,64 +166,12 @@ impl SimulationManager {
         house_vec
     }
 
-    // This will return a house, which will then later be pushed inside the vector.
-    fn generate_random_house_details(
-        position: Position,
-        mut house_evaluation_price: f64,
-    ) -> HouseDetails {
-        let random_bedrooms: u64 = rand::random_range(1..=10);
-        let random_bathrooms: u64 = rand::random_range(2..=5);
-        let random_size = rand::random_range(75.0..=300.0);
-        let random_land_size = rand::random_range(150.0..=1000.0);
-        let random_age = rand::random_range(0..=150);
-
-        let age_scaler = {
-            match random_age {
-                0..=5 => 500.0,
-                6..=20 => 0.0,
-                21..=50 => -500.0,
-                _ => 650.0,
-            }
-        };
-
-        match random_bedrooms {
-            1..=2 => house_evaluation_price += 40_000.0,
-            3..=4 => house_evaluation_price += 75_000.0,
-            mut no_of_rooms @ _ => {
-                no_of_rooms -= 4;
-                house_evaluation_price += (75_000.0) + (no_of_rooms * 50_000) as f64;
-            }
-        }
-
-        match random_bathrooms {
-            1 => house_evaluation_price += 0.0,
-            2 => house_evaluation_price += 40_000.0,
-            mut no_of_bathrooms @ _ => {
-                no_of_bathrooms -= 2;
-                house_evaluation_price += (40_000.0) + (15_000 * no_of_bathrooms) as f64;
-            }
-        }
-
-        house_evaluation_price += random_size * (1_250.0 + age_scaler);
-        house_evaluation_price += random_land_size * 950.0;
-
-        HouseDetails::new(
-            position,
-            random_bedrooms as u8,
-            random_bathrooms as u8,
-            random_size,
-            random_land_size,
-            random_age,
-            house_evaluation_price,
-        )
-    }
-
     pub(crate) fn display_house_details(&self) {
         for (index, house) in self.houses.iter().enumerate() {
             println!(
                 "House #{} | Price: ${}",
                 index + 1,
-                house.house_details.get_house_price()
+                house.house_details.get_house_sale_price()
             );
         }
     }
@@ -240,7 +187,7 @@ mod tests {
     fn test_generate_random_houses() {
         let house_evaluation_price = 0.0;
         for _ in 1..100 {
-            let house_dets = SimulationManager::generate_random_house_details(
+            let house_dets = HouseDetails::generate_random_house_details(
                 Position::new(10, 10),
                 house_evaluation_price,
             );
@@ -251,10 +198,10 @@ mod tests {
             if (1..=10).contains(&house_dets.get_bedrooms()) {
                 assert!(true);
             }
-            if (75.0..=300.0).contains(&house_dets.get_house_size()) {
+            if (75..=300).contains(&house_dets.get_land_size()) {
                 assert!(true);
             }
-            if (150.0..1000.0).contains(&house_dets.get_land_size()) {
+            if (150..1000).contains(&house_dets.get_living_area_size()) {
                 assert!(true);
             }
             if (0..=150).contains(&house_dets.get_house_age()) {
