@@ -1,7 +1,4 @@
-use crate::house_properties::{
-    house_type::HouseType,
-    position::Position,
-};
+use crate::house_properties::{house_type::HouseType, position::Position};
 use std::cmp::Ordering;
 
 pub(crate) struct HouseDetails {
@@ -766,7 +763,10 @@ impl HouseDetails {
         }
     }
 
-    pub(crate) fn generate_random_house_details(position: Position) -> Self {
+    pub(crate) fn generate_random_house_details(
+        position: Position,
+        house_evaulation_price: f64,
+    ) -> Self {
         let housetype = HouseType::get_random_housetype();
         let landsize = Self::generate_random_land_size(housetype);
         let living_area = Self::generate_living_area_size(landsize, housetype);
@@ -796,7 +796,7 @@ impl HouseDetails {
             house_quality: quality,
             house_type: housetype,
             age: age,
-            sale_price: sale_price,
+            sale_price: sale_price + house_evaulation_price,
         }
     }
 }
