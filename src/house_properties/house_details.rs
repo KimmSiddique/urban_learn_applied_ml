@@ -1,4 +1,7 @@
-use crate::house_properties::{house_type::HouseType, position::Position};
+use crate::house_properties::{
+    house_type::HouseType,
+    position::Position,
+};
 use std::cmp::Ordering;
 
 pub(crate) struct HouseDetails {
@@ -92,10 +95,6 @@ impl HouseDetails {
             age,
             sale_price,
         }
-    }
-
-    pub(crate) fn generate_random_bedrooms() -> u8 {
-        unimplemented!()
     }
 
     pub(crate) fn generate_random_land_size(housetype: HouseType) -> u32 {
@@ -625,6 +624,128 @@ impl HouseDetails {
         spaces
     }
 
+    pub(crate) fn generate_sale_price(
+        bedrooms: u8,
+        bathrooms: u8,
+        living_area_size: u32,
+        land_size: u32,
+        garage_spaces: u8,
+        house_quality: u8,
+        house_type: HouseType,
+        age: u16,
+    ) -> f64 {
+        assert!((1..=10).contains(&house_quality));
+
+        let land_value = land_size as f64 * 100.0;
+        let base_building_value = living_area_size as f64 * 850.0;
+
+        let quality_factor = match house_quality {
+            1 => 0.55,
+            2 => 0.65,
+            3 => 0.75,
+            4 => 0.87,
+            5 => 1.00,
+            6 => 1.10,
+            7 => 1.22,
+            8 => 1.38,
+            9 => 1.58,
+            10 => 1.80,
+            _ => unreachable!(),
+        };
+
+        let age_factor = match age {
+            0..=5 => 1.08,
+            6..=15 => 1.04,
+            16..=30 => 1.00,
+            31..=50 => 0.93,
+            51..=75 => 0.86,
+            76..=100 => 0.82,
+            101..=125 if house_quality >= 8 => 0.85,
+            126.. if house_quality >= 8 => 0.90,
+            101..=125 => 0.77,
+            _ => 0.72,
+        };
+
+        let type_factor = match house_type {
+            HouseType::Detached => 1.00,
+            HouseType::SemiDetached => 0.95,
+            HouseType::TownHouse => 0.91,
+        };
+
+        let building_value = base_building_value * quality_factor * age_factor * type_factor;
+
+        let bedroom_adjustment = match bedrooms {
+            0 | 1 => -12000.0,
+            2 => -5000.0,
+            3 => 0.0,
+            4 => 8000.0,
+            5 => 14000.0,
+            6 => 18000.0,
+            _ => 20000.0,
+        };
+
+        let bathroom_adjustment = match bathrooms {
+            0 | 1 => 0.0,
+            2 => 12000.0,
+            3 => 20000.0,
+            4 => 26000.0,
+            5 => 30000.0,
+            6 => 32000.0,
+            _ => 33000.0,
+        };
+
+        let garage_adjustment = match garage_spaces {
+            0 => -8000.0,
+            1 => 0.0,
+            2 => 10000.0,
+            3 => 16000.0,
+            4 => 20000.0,
+            5 => 22000.0,
+            6 => 23000.0,
+            _ => 24000.0,
+        };
+
+        let density_penalty = if bedrooms > 0 && (living_area_size as f64 / bedrooms as f64) < 25.0
+        {
+            -10000.0
+        } else {
+            0.0
+        };
+
+        let fundamental_value = (land_value
+            + building_value
+            + bedroom_adjustment
+            + bathroom_adjustment
+            + garage_adjustment
+            + density_penalty)
+            .max(10000.0);
+
+        // Hidden desirability represents unobserved house characteristics.
+        // Averaging three random values makes scores near 0.5 more common.
+        // This score will not be included in the ML dataset.
+        let desirability_score: f64 = (rand::random_range(0.0..1.0)
+            + rand::random_range(0.0..1.0)
+            + rand::random_range(0.0..1.0))
+            / 3.0;
+
+        // Converts the hidden score into a multiplier between 0.92 and 1.08.
+        // Score 0.5 produces no price adjustment.
+        let desirability_factor = 1.0 + 0.16 * (desirability_score - 0.5);
+
+        // Random market noise represents unpredictable sale conditions.
+        // Averaging three uniform random values gives a distribution
+        // concentrated around 0, with possible deviations of roughly ±3%.
+        // This is not a true normal distribution.
+        let market_noise: f64 = (rand::random_range(-0.03..0.03)
+            + rand::random_range(-0.03..0.03)
+            + rand::random_range(-0.03..0.03))
+            / 3.0;
+
+        let market_factor = 1.0 + market_noise;
+
+        (fundamental_value * desirability_factor * market_factor).round()
+    }
+
     pub(crate) fn generate_age() -> u16 {
         let prob = rand::random_range(0..100);
 
@@ -642,6 +763,40 @@ impl HouseDetails {
             rand::random_range(76..=100)
         } else {
             rand::random_range(101..=150)
+        }
+    }
+
+    pub(crate) fn generate_random_house_details(position: Position) -> Self {
+        let housetype = HouseType::get_random_housetype();
+        let landsize = Self::generate_random_land_size(housetype);
+        let living_area = Self::generate_living_area_size(landsize, housetype);
+        let bedrooms = Self::generate_bedrooms(living_area);
+        let quality = Self::generate_house_quality();
+        let bathrooms = Self::generate_bathrooms(bedrooms, quality);
+        let garage_spaces = Self::generate_garage_spaces(landsize, living_area, housetype);
+        let age = Self::generate_age();
+        let sale_price = Self::generate_sale_price(
+            bedrooms,
+            bathrooms,
+            living_area,
+            landsize,
+            garage_spaces,
+            quality,
+            housetype,
+            age,
+        );
+
+        Self {
+            position,
+            bedrooms: bedrooms,
+            bathrooms: bathrooms,
+            living_area_size: living_area,
+            land_size: landsize,
+            garage_spaces: garage_spaces,
+            house_quality: quality,
+            house_type: housetype,
+            age: age,
+            sale_price: sale_price,
         }
     }
 }
