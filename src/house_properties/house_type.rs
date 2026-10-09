@@ -36,3 +36,44 @@ impl HouseType {
         housetype
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_random_house_type() {
+        // Generate random houses and then test their probabilities approximately
+        const LOOP_SIZE: u32 = 100_000;
+        let mut detached_count: f64 = 0.0;
+        let mut semidetached_count: f64 = 0.0;
+        let mut townhouse_count: f64 = 0.0;
+
+        for _ in 0..LOOP_SIZE {
+            let house = HouseType::get_random_housetype();
+
+            match house {
+                HouseType::Detached => detached_count += 1.0,
+                HouseType::SemiDetached => semidetached_count += 1.0,
+                HouseType::TownHouse => townhouse_count += 1.0,
+            }
+        }
+
+        let detached_prob = detached_count / LOOP_SIZE as f64 * 100.0;
+        let semidetached_prob = semidetached_count / LOOP_SIZE as f64 * 100.0;
+        let townhouse_prob = townhouse_count / LOOP_SIZE as f64 * 100.0;
+
+        println!("Detached prob: {:.2}", detached_prob);
+        println!("Semi-Detached prob: {:.2}", semidetached_prob);
+        println!("TownHouse prob: {:.2}", townhouse_prob);
+
+        assert!(detached_prob > 30.0 && detached_prob < 65.0);
+        assert!(semidetached_prob > 15.0 && semidetached_prob < 30.0);
+        assert!(townhouse_prob > 15.0 && townhouse_prob < 30.0);
+
+        assert_eq!(
+            detached_count + semidetached_count + townhouse_count,
+            LOOP_SIZE as f64
+        );
+    }
+}
