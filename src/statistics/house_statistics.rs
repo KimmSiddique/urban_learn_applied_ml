@@ -33,7 +33,7 @@ impl HouseStatistics {
         }
     }
 
-    pub(crate) fn calculate_house_statistics(houses: &mut Vec<House>) -> Option<HouseStatistics> {
+    pub(crate) fn calculate_house_statistics(houses: &mut [House]) -> Option<HouseStatistics> {
         let house_count = houses.len();
 
         if house_count < 3 {
@@ -87,5 +87,33 @@ impl HouseStatistics {
         println!("Low: {:.2}", self.low);
         println!("High: {:.2}", self.high);
         println!("Count: {:.2}", self.count);
+    }
+
+    pub(crate) fn get_range(&self) -> f64 {
+        self.range
+    }
+
+    pub(crate) fn get_mean(&self) -> f64 {
+        self.mean
+    }
+
+     pub(crate) fn get_median(&self) -> f64 {
+        self.median
+    }
+
+     pub(crate) fn get_low(&self) -> f64 {
+        self.low
+    }
+
+     pub(crate) fn get_high(&self) -> f64 {
+        self.high
+    }
+
+    pub(crate) fn get_sd(&self) -> f64 {
+        self.sd
+    }
+
+    pub(crate) fn get_count(&self) -> u32 {
+        self.count
     }
 }
