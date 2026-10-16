@@ -1,5 +1,3 @@
-use std::error::Error;
-
 use crate::house_properties::{
     building_type::BuildingType, environment_features::EnvironmentFeatures, house::House,
     house_details::HouseDetails, position::*,
