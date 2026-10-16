@@ -97,15 +97,15 @@ impl HouseStatistics {
         self.mean
     }
 
-     pub(crate) fn get_median(&self) -> f64 {
+    pub(crate) fn get_median(&self) -> f64 {
         self.median
     }
 
-     pub(crate) fn get_low(&self) -> f64 {
+    pub(crate) fn get_low(&self) -> f64 {
         self.low
     }
 
-     pub(crate) fn get_high(&self) -> f64 {
+    pub(crate) fn get_high(&self) -> f64 {
         self.high
     }
 
