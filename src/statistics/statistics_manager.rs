@@ -1,4 +1,4 @@
-use crate::{house_properties::house::House, statistics::histogram_bin::HistogramBin};
+use crate::statistics::{histogram_bin::HistogramBin, house_statistics::HouseStatistics};
 use plotters::prelude::*;
 use std::{
     error::Error,
@@ -8,62 +8,6 @@ use std::{
 
 const WIDTH: u32 = 1000;
 const HEIGHT: u32 = 600;
-
-pub(crate) fn calculate_bins(house_vec: &Vec<House>) -> Vec<HistogramBin> {
-    let mut histogram_bins = Vec::new();
-
-    let mut bin_1: usize = 0;
-    let mut bin_2: usize = 0;
-    let mut bin_3: usize = 0;
-    let mut bin_4: usize = 0;
-    let mut bin_5: usize = 0;
-    let mut bin_6: usize = 0;
-    let mut bin_7: usize = 0;
-    let mut bin_8: usize = 0;
-    let mut bin_9: usize = 0;
-    let mut bin_10: usize = 0;
-    let mut overflow_bin: usize = 0;
-
-    for house in house_vec {
-        if (0.0..150_000.0).contains(&house.get_true_price()) {
-            bin_1 += 1;
-        } else if (150_000.0..300_000.0).contains(&house.get_true_price()) {
-            bin_2 += 1;
-        } else if (300_000.0..450_000.0).contains(&house.get_true_price()) {
-            bin_3 += 1;
-        } else if (450_000.0..600_000.0).contains(&house.get_true_price()) {
-            bin_4 += 1;
-        } else if (600_000.0..750_000.0).contains(&house.get_true_price()) {
-            bin_5 += 1;
-        } else if (750_000.0..900_000.0).contains(&house.get_true_price()) {
-            bin_6 += 1;
-        } else if (900_000.0..1_050_000.0).contains(&house.get_true_price()) {
-            bin_7 += 1;
-        } else if (1_050_000.0..1_200_000.0).contains(&house.get_true_price()) {
-            bin_8 += 1;
-        } else if (1_200_000.0..1_350_000.0).contains(&house.get_true_price()) {
-            bin_9 += 1;
-        } else if (1_350_000.0..1_500_000.0).contains(&house.get_true_price()) {
-            bin_10 += 1;
-        } else {
-            overflow_bin += 1;
-        }
-    }
-
-    histogram_bins.push(HistogramBin::new(0, 150_000, bin_1));
-    histogram_bins.push(HistogramBin::new(150_000, 300_000, bin_2));
-    histogram_bins.push(HistogramBin::new(300_000, 450_000, bin_3));
-    histogram_bins.push(HistogramBin::new(450_000, 600_000, bin_4));
-    histogram_bins.push(HistogramBin::new(600_000, 750_000, bin_5));
-    histogram_bins.push(HistogramBin::new(750_000, 900_000, bin_6));
-    histogram_bins.push(HistogramBin::new(900_000, 1_050_000, bin_7));
-    histogram_bins.push(HistogramBin::new(1_050_000, 1_200_000, bin_8));
-    histogram_bins.push(HistogramBin::new(1_200_000, 1_350_000, bin_9));
-    histogram_bins.push(HistogramBin::new(1_350_000, 1_500_000, bin_10));
-    histogram_bins.push(HistogramBin::new(1_500_000, usize::MAX, overflow_bin));
-
-    histogram_bins
-}
 
 fn draw_histogram(
     histogram_bins: &Vec<HistogramBin>,
@@ -142,7 +86,7 @@ mod tests {
         histogram_bins.push(HistogramBin::new(1_050_000, 1_200_000, 12));
         histogram_bins.push(HistogramBin::new(1_200_000, 1_350_000, 15));
         histogram_bins.push(HistogramBin::new(1_350_000, 1_500_000, 23));
-        histogram_bins.push(HistogramBin::new(1_500_000, usize::MAX, 10));
+        histogram_bins.push(HistogramBin::new(1_500_000, i32::MAX, 10));
 
         draw_histogram(&histogram_bins, "test_plot1").expect("Could not create histogram image");
     }
@@ -154,7 +98,11 @@ mod tests {
         let map = create_map(100, 100, &mut slice);
 
         let mut houses = SimulationManager::process_house(100, 100, &mut house_positions, &map);
-        let bins = calculate_bins(&houses);
+        houses.sort();
+        let house_statistics = HouseStatistics::calculate_house_statistics(&mut houses)
+            .expect("Could not calculate house statistics");
+
+        let bins = HistogramBin::calculate_bins(&houses, house_statistics.get_high());
 
         draw_histogram(&bins, "plot100times100").expect("Could not draw histogram");
         let statistics = HouseStatistics::calculate_house_statistics(&mut houses).unwrap();
