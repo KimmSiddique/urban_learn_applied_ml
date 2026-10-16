@@ -1,3 +1,5 @@
+use std::error::Error;
+
 use crate::house_properties::{
     building_type::BuildingType, environment_features::EnvironmentFeatures, house::House,
     house_details::HouseDetails, position::*,
@@ -91,10 +93,10 @@ impl SimulationManager {
                         // Remember you later have to increment the school type inside this dont forget to do this
                         match distance {
                             1..=2 => {
-                                house_evaluation_price += 15_000.0;
+                                house_evaluation_price += 7_500.0;
                             }
                             3..=5 => {
-                                house_evaluation_price += 7_500.0;
+                                house_evaluation_price += 5_000.0;
                             }
                             6..=10 => {
                                 house_evaluation_price += 2_500.0;
@@ -107,13 +109,13 @@ impl SimulationManager {
                     } else if building == BuildingType::Shop && distance <= 15 {
                         match distance {
                             1..=3 => {
-                                house_evaluation_price += 25_000.0;
+                                house_evaluation_price += 3_000.0;
                             }
                             4..=10 => {
-                                house_evaluation_price += 10_000.0;
+                                house_evaluation_price += 5_000.0;
                             }
                             11..=15 => {
-                                house_evaluation_price += 5_000.0;
+                                house_evaluation_price += 2_000.0;
                             }
                             _ => {
                                 house_evaluation_price += 0.0;
@@ -123,13 +125,13 @@ impl SimulationManager {
                     } else if building == BuildingType::Park && distance <= 20 {
                         match distance {
                             1..=5 => {
-                                house_evaluation_price += 35_000.0;
+                                house_evaluation_price += 10_000.0;
                             }
                             6..=15 => {
-                                house_evaluation_price += 15_000.0;
+                                house_evaluation_price += 6_000.0;
                             }
                             16..=20 => {
-                                house_evaluation_price += 8_750.0;
+                                house_evaluation_price += 2_500.0;
                             }
                             _ => {
                                 house_evaluation_price += 0.0;
@@ -139,16 +141,16 @@ impl SimulationManager {
                     } else if building == BuildingType::Factory && distance <= 30 {
                         match distance {
                             1..=10 => {
-                                house_evaluation_price -= 50_000.0;
+                                house_evaluation_price -= 20_000.0;
                             }
                             11..=20 => {
-                                house_evaluation_price -= 35_000.0;
+                                house_evaluation_price -= 10_000.0;
                             }
                             21..=30 => {
-                                house_evaluation_price -= 27_550.0;
+                                house_evaluation_price -= 4_000.0;
                             }
                             _ => {
-                                house_evaluation_price -= 15_000.0;
+                                house_evaluation_price -= 1_500.0;
                             }
                         }
                         environment_features.add_factory(Position::new(y, x), house_pos);
@@ -174,6 +176,35 @@ impl SimulationManager {
                 house.house_details.get_house_sale_price()
             );
         }
+    }
+
+    // Use this when processing larger batches of house to distribute workload across multiple threads
+    pub(crate) fn multithread_process_house(
+        house_positions: &mut Vec<Position>,
+        width: usize,
+        height: usize,
+        map: &Vec<Vec<BuildingType>>,
+    ) -> Vec<House> {
+        let mid = house_positions.len();
+        let (first, second) = house_positions.split_at_mut(mid);
+
+        let mut new_combined_house_vec = Vec::new();
+
+        std::thread::scope(|scope| {
+            let pt1 = scope.spawn(|| SimulationManager::process_house(width, height, first, map));
+            let pt2 = scope.spawn(|| SimulationManager::process_house(width, height, second, map));
+
+            let mut house1 = pt1
+                .join()
+                .expect("Failed to process house in multithread_process_house");
+            let mut house2 = pt2
+                .join()
+                .expect("Failed to process house in multithread_process_house");
+
+            new_combined_house_vec.append(&mut house1);
+            new_combined_house_vec.append(&mut house2);
+            new_combined_house_vec
+        })
     }
 }
 
@@ -224,44 +255,27 @@ mod tests {
         let mut house_positions =
             read_vector_of_positions(&house_pos_path).expect("Could not load house positions");
 
-        let house_count_mid = house_positions.len() / 2;
+        let combined_house_vec =
+            SimulationManager::multithread_process_house(&mut house_positions, width, height, &map);
 
-        std::thread::scope(|scope| {
-            let (first, rest) = house_positions.split_at_mut(house_count_mid);
-
-            let mut combined_house_vec = Vec::new();
-
-            let house1 =
-                scope.spawn(|| SimulationManager::process_house(width, height, first, &map));
-
-            let house2 =
-                scope.spawn(|| SimulationManager::process_house(width, height, rest, &map));
-
-            let mut house1 = house1.join().unwrap();
-            let mut house2 = house2.join().unwrap();
-
-            combined_house_vec.append(&mut house1);
-            combined_house_vec.append(&mut house2);
-
-            assert_eq!(
-                combined_house_vec[0].environment_features.get_num_shops(),
-                7
-            );
-            assert_eq!(
-                combined_house_vec[2]
-                    .environment_features
-                    .get_num_factories(),
-                4
-            );
-            assert_eq!(
-                combined_house_vec[8].environment_features.get_num_schools(),
-                3
-            );
-            assert_eq!(
-                combined_house_vec[15].environment_features.get_num_parks(),
-                7
-            );
-        });
+        assert_eq!(
+            combined_house_vec[0].environment_features.get_num_shops(),
+            7
+        );
+        assert_eq!(
+            combined_house_vec[2]
+                .environment_features
+                .get_num_factories(),
+            4
+        );
+        assert_eq!(
+            combined_house_vec[8].environment_features.get_num_schools(),
+            3
+        );
+        assert_eq!(
+            combined_house_vec[15].environment_features.get_num_parks(),
+            7
+        );
     }
 
     #[test]
@@ -278,51 +292,34 @@ mod tests {
         let mut house_positions =
             read_vector_of_positions(&house_pos_path).expect("Could not load house positions");
 
-        let house_count_mid = house_positions.len() / 2;
+        let combined_house_vec =
+            SimulationManager::multithread_process_house(&mut house_positions, width, height, &map);
 
-        std::thread::scope(|scope| {
-            let (first, rest) = house_positions.split_at_mut(house_count_mid);
+        assert_eq!(
+            combined_house_vec[0].environment_features.get_num_shops(),
+            16
+        );
+        println!("House price: {:.2}", combined_house_vec[0].get_true_price());
+        assert_eq!(
+            combined_house_vec[0]
+                .environment_features
+                .get_num_factories(),
+            29
+        );
+        assert_eq!(
+            combined_house_vec[0].environment_features.get_num_schools(),
+            4
+        );
+        assert_eq!(
+            combined_house_vec[0].environment_features.get_num_parks(),
+            25
+        );
 
-            let mut combined_house_vec = Vec::new();
-
-            let house1 =
-                scope.spawn(|| SimulationManager::process_house(width, height, first, &map));
-
-            let house2 =
-                scope.spawn(|| SimulationManager::process_house(width, height, rest, &map));
-
-            let mut house1 = house1.join().unwrap();
-            let mut house2 = house2.join().unwrap();
-
-            combined_house_vec.append(&mut house1);
-            combined_house_vec.append(&mut house2);
-
-            assert_eq!(
-                combined_house_vec[0].environment_features.get_num_shops(),
-                16
-            );
-            println!("House price: {:.2}", combined_house_vec[0].get_true_price());
-            assert_eq!(
-                combined_house_vec[0]
-                    .environment_features
-                    .get_num_factories(),
-                29
-            );
-            assert_eq!(
-                combined_house_vec[0].environment_features.get_num_schools(),
-                4
-            );
-            assert_eq!(
-                combined_house_vec[0].environment_features.get_num_parks(),
-                25
-            );
-
-            assert_eq!(
-                combined_house_vec[0]
-                    .environment_features
-                    .get_avg_shop_dist(),
-                10.0
-            );
-        });
+        assert_eq!(
+            combined_house_vec[0]
+                .environment_features
+                .get_avg_shop_dist(),
+            10.0
+        );
     }
 }
