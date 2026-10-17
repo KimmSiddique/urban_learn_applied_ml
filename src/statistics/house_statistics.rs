@@ -87,6 +87,7 @@ impl HouseStatistics {
         println!("Low: {:.2}", self.low);
         println!("High: {:.2}", self.high);
         println!("Count: {:.2}", self.count);
+        println!("Standard deviation: {:.2}", self.sd);
     }
 
     pub(crate) fn get_range(&self) -> f64 {
