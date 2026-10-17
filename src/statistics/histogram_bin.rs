@@ -21,13 +21,18 @@ impl HistogramBin {
         self.count
     }
 
-    pub(crate) fn calculate_bins(house_vec: &[House], max_house_price: f64) -> Vec<HistogramBin> {
+    pub(crate) fn calculate_bins(
+        house_vec: &[House],
+        max_house_price: f64,
+    ) -> (Vec<HistogramBin>, i32, i32) {
         // MAKE SURE HOUSE VEC IS SORTED OR WE ARE COOKED
         let mut index = 0;
 
+        let mut max_bin_count = 0;
         let start = 0;
         let end = ((max_house_price / 100_000.0).ceil() * 100_000.0) as i32;
 
+        // Interval is set to be about 5
         let interval = end / 5;
 
         let mut bins = Vec::new();
@@ -43,9 +48,12 @@ impl HistogramBin {
 
                 index += 1;
             }
+            if bin_count > max_bin_count {
+                max_bin_count = bin_count;
+            }
 
             bins.push(HistogramBin::new(i as i32, bin_end as i32, bin_count));
         }
-        bins
+        (bins, end, max_bin_count)
     }
 }
