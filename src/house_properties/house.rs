@@ -1,5 +1,5 @@
 use crate::house_properties::{
-    environment_features::EnvironmentFeatures, house_details::HouseDetails,
+    environment_features::EnvironmentFeatures, house_details::HouseDetails, house_type::HouseType,
 };
 use std::cmp::Ordering;
 
@@ -21,6 +21,40 @@ impl House {
 
     pub(crate) fn get_true_price(&self) -> f64 {
         self.house_details.get_house_sale_price()
+    }
+
+    // This function creates the vector in a way that can be mapped into features
+    pub(crate) fn featurify(&self) -> (Vec<f64>, f64) {
+        let env_features = &self.environment_features;
+        let house_attributes = &self.house_details;
+
+        let house_type = match house_attributes.get_house_type() {
+            HouseType::Detached => 2.0,
+            HouseType::SemiDetached => 1.0,
+            HouseType::TownHouse => 0.0,
+        };
+
+        let features = vec![
+            env_features.get_num_schools() as f64,
+            env_features.get_avg_school_dist() as f64,
+            env_features.get_num_shops() as f64,
+            env_features.get_avg_shop_dist() as f64,
+            env_features.get_num_parks() as f64,
+            env_features.get_avg_park_dist() as f64,
+            env_features.get_num_factories() as f64,
+            env_features.get_avg_factory_dist() as f64,
+            // Now time for the house attributes
+            house_type,
+            house_attributes.get_land_size() as f64,
+            house_attributes.get_living_area_size() as f64,
+            house_attributes.get_bedrooms() as f64,
+            house_attributes.get_garage_spaces() as f64,
+            house_attributes.get_bathrooms() as f64,
+            house_attributes.get_house_quality() as f64,
+            house_attributes.get_house_age() as f64,
+        ];
+
+        (features, house_attributes.get_house_sale_price())
     }
 }
 
