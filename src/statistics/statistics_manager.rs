@@ -1,4 +1,2 @@
 // This will be used to manage the histograms and sorts later...
-struct StatisticsManager {
-
-}
+struct StatisticsManager {}
