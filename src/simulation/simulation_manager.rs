@@ -2,10 +2,10 @@ use crate::house_properties::{
     building_type::BuildingType, environment_features::EnvironmentFeatures, house::House,
     house_details::HouseDetails, position::*,
 };
-use crate::simulation::agent::Agent;
+use crate::resource_manager::ResourceManager;
+use crate::simulation::agent_manager::AgentManager;
 use crate::simulation::map::create_map;
-use crate::statistics::house_statistics::HouseStatistics;
-use std::collections::VecDeque;
+use crate::statistics::statistics_manager::StatisticsManager;
 
 const RADIUS: usize = 30;
 
@@ -23,12 +23,13 @@ pub(crate) struct SimulationManager {
 
     houses: Vec<House>,
 
-    house_statistics: Option<HouseStatistics>,
-    agents: VecDeque<Agent>,
+    statistics_manager: StatisticsManager,
+    agent_manager: AgentManager,
+    resource_manager: ResourceManager,
 }
 
 impl SimulationManager {
-    fn new(width: usize, height: usize) -> Self {
+    pub(crate) async fn new(width: usize, height: usize) -> Self {
         let mut new_house_positions = Vec::new();
         let mut new_school_positions = Vec::new();
         let mut new_shop_positions = Vec::new();
@@ -54,9 +55,10 @@ impl SimulationManager {
             factory_positions: new_factory_positions,
             width: width,
             height: height,
-            house_statistics: None,
+            statistics_manager: StatisticsManager::new(),
             houses: Vec::new(),
-            agents: VecDeque::new(),
+            agent_manager: AgentManager::new(),
+            resource_manager: ResourceManager::new().await,
         }
     }
 
