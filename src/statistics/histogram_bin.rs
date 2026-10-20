@@ -9,6 +9,22 @@ use std::{
 const WIDTH: u32 = 1000;
 const HEIGHT: u32 = 600;
 
+pub(crate) struct BinDetails {
+    pub(crate) bins: Vec<HistogramBin>,
+    pub(crate) end: i32,
+    pub(crate) max_bin_count: i32,
+}
+
+impl BinDetails {
+    pub(crate) fn new(bins: Vec<HistogramBin>, end: i32, max_bin_count: i32) -> Self {
+        Self {
+            bins,
+            end,
+            max_bin_count,
+        }
+    }
+}
+
 pub(crate) struct HistogramBin {
     start: i32,
     end: i32,
