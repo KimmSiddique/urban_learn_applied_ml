@@ -1,4 +1,5 @@
 use crate::house_properties::house::House;
+use crate::house_properties::position::Position;
 use smartcore::ensemble::random_forest_regressor::{
     RandomForestRegressor, RandomForestRegressorParameters,
 };
@@ -18,6 +19,8 @@ pub(crate) struct AgentAttributes {
     houses: Vec<House>,
     model: Option<HouseModel>,
     agent_energy: u32,
+    position: Position,
+    pub(crate) move_opposite_direction: bool,
 }
 
 impl AgentAttributes {
@@ -57,6 +60,8 @@ impl AgentAttributes {
             houses: Vec::new(),
             model: None,
             agent_energy,
+            position: Position::new(0, 0),
+            move_opposite_direction: false,
         }
     }
 
@@ -75,5 +80,18 @@ impl AgentAttributes {
 
     pub(crate) fn decrement_agent_energy(&mut self) {
         self.agent_energy -= 1;
+    }
+
+    pub(crate) fn get_agent_position(&mut self) -> (usize, usize) {
+        (self.position.y, self.position.x)
+    }
+
+    pub(crate) fn set_agent_position(&mut self, y: usize, x: usize) {
+        self.position.y = y;
+        self.position.x = x;
+    }
+
+    pub(crate) fn get_is_agent_moving_in_opposite_direction(&self) -> bool {
+        self.move_opposite_direction
     }
 }

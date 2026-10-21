@@ -1,37 +1,37 @@
 [
   [
     "Empty",
-    "House",
+    "Empty",
     "House",
     "School",
     "Empty"
   ],
   [
     "Empty",
-    "Shop",
     "Empty",
+    "School",
     "Empty",
     "Empty"
   ],
   [
     "Empty",
+    "School",
     "Factory",
-    "Factory",
-    "Empty",
-    "House"
+    "House",
+    "Empty"
   ],
   [
-    "Empty",
-    "Empty",
     "Empty",
     "House",
-    "House"
+    "Empty",
+    "Shop",
+    "Factory"
   ],
   [
+    "House",
+    "School",
     "Empty",
-    "Empty",
-    "Empty",
-    "Empty",
+    "Factory",
     "Empty"
   ]
 ]

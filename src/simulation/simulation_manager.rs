@@ -6,8 +6,13 @@ use crate::resource_manager::ResourceManager;
 use crate::simulation::agent_manager::AgentManager;
 use crate::simulation::map::create_map;
 use crate::statistics::statistics_manager::StatisticsManager;
+use macroquad::camera::Camera2D;
+use macroquad::math::Rect;
 
 const RADIUS: usize = 30;
+pub const TILE_SIZE: f32 = 32.0;
+pub const CAMERA_VIEW_WIDTH: f32 = 320.0;
+pub const CAMERA_VIEW_HEIGHT: f32 = 320.0;
 
 pub(crate) struct SimulationManager {
     map: Vec<Vec<BuildingType>>,
@@ -26,6 +31,7 @@ pub(crate) struct SimulationManager {
     statistics_manager: StatisticsManager,
     agent_manager: AgentManager,
     resource_manager: ResourceManager,
+    camera: Camera2D,
 }
 
 impl SimulationManager {
@@ -59,6 +65,12 @@ impl SimulationManager {
             houses: Vec::new(),
             agent_manager: AgentManager::new(),
             resource_manager: ResourceManager::new().await,
+            camera: Camera2D::from_display_rect(Rect::new(
+                0.0,
+                0.0,
+                CAMERA_VIEW_WIDTH,
+                CAMERA_VIEW_HEIGHT,
+            )),
         }
     }
 
