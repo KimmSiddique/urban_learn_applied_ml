@@ -1,5 +1,6 @@
 use crate::house_properties::position::Position;
 
+#[derive(Clone)]
 pub(crate) struct EnvironmentFeatures {
     schools_within_10km: u16,
     school_positions: Vec<Position>,

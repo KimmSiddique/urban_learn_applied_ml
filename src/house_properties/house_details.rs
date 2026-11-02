@@ -1,6 +1,7 @@
 use crate::house_properties::{house_type::HouseType, position::Position};
 use std::cmp::Ordering;
 
+#[derive(Clone)]
 pub(crate) struct HouseDetails {
     position: Position,
     bedrooms: u8,
@@ -786,17 +787,29 @@ impl HouseDetails {
             age,
         );
 
-        Self {
+        Self::new(
             position,
-            bedrooms: bedrooms,
-            bathrooms: bathrooms,
-            living_area_size: living_area,
-            land_size: landsize,
-            garage_spaces: garage_spaces,
-            house_quality: quality,
-            house_type: housetype,
-            age: age,
-            sale_price: sale_price + house_evaulation_price,
-        }
+            bedrooms,
+            bathrooms,
+            living_area,
+            landsize,
+            garage_spaces,
+            quality,
+            housetype,
+            age,
+            (sale_price + house_evaulation_price).max(10_000.0),
+        )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn environmental_penalties_cannot_reduce_price_below_minimum() {
+        let house =
+            HouseDetails::generate_random_house_details(Position::new(0, 0), -1_000_000_000.0);
+        assert_eq!(house.get_house_sale_price(), 10_000.0);
     }
 }

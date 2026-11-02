@@ -1,14 +1,11 @@
 use crate::house_properties::house::House;
 use plotters::prelude::*;
-use std::{
-    error::Error,
-    fs::create_dir_all,
-    path::{Path, PathBuf},
-};
+use std::{error::Error, fs::create_dir_all, path::Path};
 
 const WIDTH: u32 = 1000;
 const HEIGHT: u32 = 600;
 
+#[derive(serde::Serialize)]
 pub(crate) struct BinDetails {
     pub(crate) bins: Vec<HistogramBin>,
     pub(crate) end: i32,
@@ -25,6 +22,7 @@ impl BinDetails {
     }
 }
 
+#[derive(serde::Serialize)]
 pub(crate) struct HistogramBin {
     start: i32,
     end: i32,
@@ -50,35 +48,21 @@ impl HistogramBin {
         house_vec: &[House],
         max_house_price: f64,
     ) -> (Vec<HistogramBin>, i32, i32) {
-        // MAKE SURE HOUSE VEC IS SORTED OR WE ARE COOKED
-        let mut index = 0;
-
-        let mut max_bin_count = 0;
-        let start = 0;
-        let end = ((max_house_price / 100_000.0).ceil() * 100_000.0) as i32;
-
-        // Interval is set to be about 5
+        let maximum = house_vec
+            .iter()
+            .map(House::get_true_price)
+            .fold(max_house_price, f64::max);
+        let end =
+            ((maximum / 100_000.0).ceil() * 100_000.0).clamp(100_000.0, 2_000_000_000.0) as i32;
         let interval = end / 5;
-
-        let mut bins = Vec::new();
-
-        for i in (start..end).step_by(interval as usize) {
-            let bin_end = i + interval;
-            let mut bin_count = 0;
-
-            while index < house_vec.len() && house_vec[index].get_true_price() < bin_end as f64 {
-                if house_vec[index].get_true_price() >= i as f64 {
-                    bin_count += 1;
-                }
-
-                index += 1;
-            }
-            if bin_count > max_bin_count {
-                max_bin_count = bin_count;
-            }
-
-            bins.push(HistogramBin::new(i as i32, bin_end as i32, bin_count));
+        let mut bins: Vec<_> = (0..5)
+            .map(|i| Self::new(i * interval, (i + 1) * interval, 0))
+            .collect();
+        for house in house_vec {
+            let index = ((house.get_true_price() / interval as f64) as usize).min(4);
+            bins[index].count += 1;
         }
+        let max_bin_count = bins.iter().map(Self::get_count).max().unwrap_or(0);
         (bins, end, max_bin_count)
     }
 
@@ -88,16 +72,11 @@ impl HistogramBin {
         max_house_price: i32,
         max_bin_count: i32,
     ) -> Result<(), Box<dyn Error>> {
-        // Plotters uses a drawing backend...
-        let mut pathy = path.as_ref().to_path_buf();
-        create_dir_all("plots")?;
-
-        let mut path_buf = PathBuf::from("plots");
-
-        if !pathy.extension().is_some_and(|ext| ext == "png") {
-            pathy.set_extension("png");
+        let mut path_buf = path.as_ref().to_path_buf();
+        path_buf.set_extension("png");
+        if let Some(parent) = path_buf.parent().filter(|p| !p.as_os_str().is_empty()) {
+            create_dir_all(parent)?;
         }
-        path_buf.push(pathy);
 
         let root = BitMapBackend::new(&path_buf, (WIDTH, HEIGHT)).into_drawing_area();
         root.fill(&WHITE)?;
@@ -113,7 +92,7 @@ impl HistogramBin {
             .y_label_area_size(50)
             .build_cartesian_2d(
                 (0..max_house_price).with_key_points(histogram_bin_positions),
-                0..max_bin_count,
+                0..(max_bin_count + 1).max(1),
             )?;
 
         chart
@@ -146,6 +125,63 @@ mod tests {
     use crate::simulation::{map::create_map, simulation_manager::SimulationManager};
     use crate::statistics::house_statistics::HouseStatistics;
 
+    fn priced_house(price: f64) -> House {
+        use crate::house_properties::{
+            environment_features::EnvironmentFeatures, house_details::HouseDetails,
+            house_type::HouseType, position::Position,
+        };
+        House::new(
+            HouseDetails::new(
+                Position::new(0, 0),
+                2,
+                1,
+                80,
+                300,
+                1,
+                5,
+                HouseType::Detached,
+                20,
+                price,
+            ),
+            EnvironmentFeatures::new(),
+        )
+    }
+
+    #[test]
+    fn bins_count_unsorted_prices_and_include_highest_boundary() {
+        let houses = vec![
+            priced_house(10_000.0),
+            priced_house(40_000.0),
+            priced_house(20_000.0),
+            priced_house(100_000.0),
+        ];
+        let (bins, end, maximum) = HistogramBin::calculate_bins(&houses, 100_000.0);
+        assert_eq!(end, 100_000);
+        assert_eq!(maximum, 1);
+        assert_eq!(
+            bins.iter().map(HistogramBin::get_count).collect::<Vec<_>>(),
+            vec![1, 1, 1, 0, 1]
+        );
+        let (sample, shared_end, _) = HistogramBin::calculate_bins(&houses[..1], 200_000.0);
+        assert_eq!(shared_end, 200_000);
+        assert_eq!(sample[0].get_end(), 40_000);
+    }
+
+    #[test]
+    fn empty_and_constant_samples_have_valid_bins() {
+        let (empty, end, maximum) = HistogramBin::calculate_bins(&[], 0.0);
+        assert_eq!(empty.len(), 5);
+        assert_eq!(end, 100_000);
+        assert_eq!(maximum, 0);
+        HistogramBin::draw_histogram(&empty, "plots/empty_histogram", end, maximum).unwrap();
+        let (constant, _, maximum) = HistogramBin::calculate_bins(
+            &[priced_house(10_000.0), priced_house(10_000.0)],
+            10_000.0,
+        );
+        assert_eq!(maximum, 2);
+        assert_eq!(constant.iter().map(HistogramBin::get_count).sum::<i32>(), 2);
+    }
+
     #[test]
     fn test_draw_histogram() {
         let mut histogram_bins = Vec::new();
@@ -160,9 +196,9 @@ mod tests {
         histogram_bins.push(HistogramBin::new(1_050_000, 1_200_000, 12));
         histogram_bins.push(HistogramBin::new(1_200_000, 1_350_000, 15));
         histogram_bins.push(HistogramBin::new(1_350_000, 1_500_000, 23));
-        histogram_bins.push(HistogramBin::new(1_500_000, i32::MAX, 10));
+        histogram_bins.push(HistogramBin::new(1_500_000, 1_650_000, 10));
 
-        HistogramBin::draw_histogram(&histogram_bins, "test_plot1", 100_000, 30)
+        HistogramBin::draw_histogram(&histogram_bins, "plots/test_plot1", 1_650_000, 30)
             .expect("Could not create histogram image");
     }
 
@@ -180,7 +216,7 @@ mod tests {
         let (bins, end, max_count) =
             HistogramBin::calculate_bins(&houses, house_statistics.get_high());
 
-        HistogramBin::draw_histogram(&bins, "plot100times100", end, max_count)
+        HistogramBin::draw_histogram(&bins, "plots/plot100times100", end, max_count)
             .expect("Could not draw histogram");
         let statistics = HouseStatistics::calculate_house_statistics(&mut houses).unwrap();
         statistics.display_statistics();

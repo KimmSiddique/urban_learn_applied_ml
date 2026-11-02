@@ -15,7 +15,7 @@ pub(crate) enum AgentMode {
 }
 pub(crate) struct AgentAttributes {
     agent_mode: AgentMode,
-    houses: Vec<House>,
+    pub(crate) houses: Vec<House>,
     model: Option<HouseModel>,
     agent_energy: u32,
 }
@@ -40,15 +40,15 @@ impl AgentAttributes {
         &mut self,
         feature_matrix: DenseMatrix<f64>,
         target_values: Vec<f64>,
-    ) {
-        self.model = Some(
-            HouseModel::fit(
-                &feature_matrix,
-                &target_values,
-                RandomForestRegressorParameters::default(),
-            )
-            .expect("Could not train model"),
-        );
+    ) -> Result<(), Box<dyn Error>> {
+        self.model = Some(HouseModel::fit(
+            &feature_matrix,
+            &target_values,
+            RandomForestRegressorParameters::default()
+                .with_seed(42)
+                .with_n_trees(100),
+        )?);
+        Ok(())
     }
 
     pub(crate) fn new(agent_mode: AgentMode, agent_energy: u32) -> Self {
@@ -74,6 +74,6 @@ impl AgentAttributes {
     }
 
     pub(crate) fn decrement_agent_energy(&mut self) {
-        self.agent_energy -= 1;
+        self.agent_energy = self.agent_energy.saturating_sub(1);
     }
 }

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[repr(u8)]
-#[derive(Clone, Copy, PartialEq, Serialize, Deserialize, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Debug)]
 pub(crate) enum BuildingType {
     Empty = 0,
     House = 1,

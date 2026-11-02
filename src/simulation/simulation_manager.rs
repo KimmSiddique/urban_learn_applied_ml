@@ -2,32 +2,19 @@ use crate::house_properties::{
     building_type::BuildingType, environment_features::EnvironmentFeatures, house::House,
     house_details::HouseDetails, position::*,
 };
-use crate::simulation::agent_manager::AgentManager;
 use crate::simulation::map::create_map;
-use crate::statistics::statistics_manager::StatisticsManager;
 
 const RADIUS: usize = 30;
 
 pub(crate) struct SimulationManager {
-    map: Vec<Vec<BuildingType>>,
+    pub(crate) map: Vec<Vec<BuildingType>>,
 
-    house_positions: Vec<Position>,
-    school_positions: Vec<Position>,
-    shop_positions: Vec<Position>,
-    park_positions: Vec<Position>,
-    factory_positions: Vec<Position>,
-
-    width: usize,
-    height: usize,
-
-    houses: Vec<House>,
-
-    statistics_manager: StatisticsManager,
-    agent_manager: AgentManager,
+    pub(crate) houses: Vec<House>,
 }
 
 impl SimulationManager {
     pub(crate) fn new(width: usize, height: usize) -> Self {
+        assert!(width > 0 && height > 0, "Map dimensions must be positive");
         let mut new_house_positions = Vec::new();
         let mut new_school_positions = Vec::new();
         let mut new_shop_positions = Vec::new();
@@ -44,18 +31,11 @@ impl SimulationManager {
 
         let new_map = create_map(height, width, &mut slice);
 
+        let houses =
+            Self::multithread_process_house(&mut new_house_positions, width, height, &new_map);
         Self {
             map: new_map,
-            house_positions: new_house_positions,
-            school_positions: new_school_positions,
-            shop_positions: new_shop_positions,
-            park_positions: new_park_positions,
-            factory_positions: new_factory_positions,
-            width: width,
-            height: height,
-            statistics_manager: StatisticsManager::new(),
-            houses: Vec::new(),
-            agent_manager: AgentManager::new(),
+            houses,
         }
     }
 
@@ -185,7 +165,10 @@ impl SimulationManager {
         height: usize,
         map: &Vec<Vec<BuildingType>>,
     ) -> Vec<House> {
-        let mid = house_positions.len();
+        if house_positions.len() < 2 {
+            return Self::process_house(width, height, house_positions, map);
+        }
+        let mid = house_positions.len() / 2;
         let (first, second) = house_positions.split_at_mut(mid);
 
         let mut new_combined_house_vec = Vec::new();
@@ -257,6 +240,15 @@ mod tests {
 
         let combined_house_vec =
             SimulationManager::multithread_process_house(&mut house_positions, width, height, &map);
+
+        assert_eq!(combined_house_vec.len(), house_positions.len());
+        assert_eq!(
+            combined_house_vec
+                .iter()
+                .map(|h| h.house_details.get_house_position())
+                .collect::<Vec<_>>(),
+            house_positions
+        );
 
         assert_eq!(
             combined_house_vec[0].environment_features.get_num_shops(),

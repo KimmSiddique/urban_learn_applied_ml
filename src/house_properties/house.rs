@@ -3,6 +3,7 @@ use crate::house_properties::{
 };
 use std::cmp::Ordering;
 
+#[derive(Clone)]
 pub(crate) struct House {
     pub(crate) house_details: HouseDetails,
     pub(crate) environment_features: EnvironmentFeatures,

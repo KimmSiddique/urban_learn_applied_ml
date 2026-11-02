@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+#[cfg(test)]
 use std::{fs::File, io::BufReader, path::Path};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
@@ -23,12 +24,14 @@ impl PartialEq for Position {
     }
 }
 
+#[cfg(test)]
 pub(crate) fn read_vector_of_positions(path: &Path) -> Option<Vec<Position>> {
     let file = File::open(path).ok()?;
     let buff_reader = BufReader::new(file);
     serde_json::from_reader(buff_reader).ok()
 }
 
+#[cfg(test)]
 pub(crate) fn display_vec_of_positions(positions: &Vec<Position>) {
     for pos in positions {
         println!("y: {} x: {}", pos.y, pos.x);

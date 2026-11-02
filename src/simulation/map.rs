@@ -4,8 +4,8 @@ use crate::house_properties::{building_type::BuildingType, position::Position};
 use rand;
 use std::{
     fs::{File, create_dir_all},
-    io::{BufReader, BufWriter, Write},
-    path::{Path, PathBuf},
+    io::{BufWriter, Write},
+    path::Path,
 };
 
 pub(crate) fn create_map(
@@ -43,6 +43,7 @@ pub(crate) fn create_map(
     map
 }
 
+#[cfg(test)]
 pub(crate) fn display_map(map: &Vec<Vec<BuildingType>>) {
     for row in map {
         for cell in row {
@@ -52,9 +53,10 @@ pub(crate) fn display_map(map: &Vec<Vec<BuildingType>>) {
     }
 }
 
+#[cfg(test)]
 pub(crate) fn construct_map_from_file(path: &Path) -> Option<Vec<Vec<BuildingType>>> {
     let file = File::open(path).ok()?; // remmeber 
-    let reader = BufReader::new(file);
+    let reader = std::io::BufReader::new(file);
 
     serde_json::from_reader(reader).ok()
 }
@@ -63,17 +65,11 @@ pub(crate) fn load_map_to_file(
     map: &Vec<Vec<BuildingType>>,
     path: impl AsRef<Path>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let mut map_path = PathBuf::from("saved_maps");
-
-    create_dir_all(&map_path)?;
-
-    let mut pathy = path.as_ref().to_path_buf();
-
-    if !pathy.extension().is_some_and(|ext| ext == "json") {
-        pathy.set_extension("json");
+    let mut map_path = path.as_ref().to_path_buf();
+    map_path.set_extension("json");
+    if let Some(parent) = map_path.parent().filter(|p| !p.as_os_str().is_empty()) {
+        create_dir_all(parent)?;
     }
-
-    map_path.push(pathy);
 
     let user_path = File::create(map_path)?;
     let mut writer = BufWriter::new(user_path);
@@ -121,14 +117,16 @@ mod tests {
             &mut new_factory_positions,
         ];
         let map = create_map(5, 5, &mut slice);
-        load_map_to_file(&map, "saved_map1.json").expect("Could not save map");
-        load_map_to_file(&map, "saved_map2").expect("Could not save map");
+        let path =
+            std::env::temp_dir().join(format!("urban_learn_map_{}.json", std::process::id()));
+        load_map_to_file(&map, &path).expect("Could not save map");
+        let loaded = construct_map_from_file(&path).expect("Could not load saved map");
+        assert_eq!(map, loaded);
+        std::fs::remove_file(path).unwrap();
     }
 
     #[test]
     fn test_construct_map_after_load_map_to_file() {
-        // Assuming you ran the test_load_map_to_file() function, there should exist some saved maps...
-        test_load_map_to_file();
         let mut map_path = PathBuf::from("saved_maps");
         map_path.push("saved_map1.json");
         let map = construct_map_from_file(&map_path).expect("Could not construct map");

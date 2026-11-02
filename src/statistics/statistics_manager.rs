@@ -5,12 +5,11 @@ use crate::{
         house_statistics::HouseStatistics,
     },
 };
-use std::path::Path;
+use std::{error::Error, path::Path};
 
-// This will be used to manage the histograms and sorts later...
+#[derive(serde::Serialize)]
 pub(crate) struct StatisticsManager {
     pub(crate) house_statistics: Option<HouseStatistics>,
-    pub(crate) histogram_bin: Option<HistogramBin>,
     pub(crate) bins_details: Option<BinDetails>,
 }
 
@@ -18,33 +17,47 @@ impl StatisticsManager {
     pub(crate) fn new() -> Self {
         Self {
             house_statistics: None,
-            histogram_bin: None,
             bins_details: None,
         }
     }
 
     pub(crate) fn create_house_statistics(&mut self, houses: &mut [House]) {
-        if let Some(house_stats) = HouseStatistics::calculate_house_statistics(houses) {
-            self.house_statistics = Some(house_stats);
-        }
+        self.house_statistics = if houses.len() >= 3 {
+            HouseStatistics::calculate_house_statistics(houses)
+        } else {
+            None
+        };
     }
 
-    pub(crate) fn calculate_bins(&mut self, house_vec: &[House]) {
-        if let Some(house_statistics) = &self.house_statistics {
-            let (bins, end, max_bin_count) =
-                HistogramBin::calculate_bins(house_vec, house_statistics.get_high());
-            self.bins_details = Some(BinDetails::new(bins, end, max_bin_count))
-        }
+    pub(crate) fn calculate_bins(&mut self, houses: &[House], maximum_price: f64) {
+        let (bins, end, max_count) = HistogramBin::calculate_bins(houses, maximum_price);
+        self.bins_details = Some(BinDetails::new(bins, end, max_count));
     }
 
-    pub(crate) fn draw_histograms(&self, path: impl AsRef<Path>) -> Option<()> {
-        HistogramBin::draw_histogram(
-            &self.bins_details.as_ref()?.bins,
-            path,
-            self.house_statistics.as_ref()?.get_high() as i32,
-            self.bins_details.as_ref()?.max_bin_count,
-        )
-        .ok()?;
-        Some(())
+    pub(crate) fn draw_histograms(&self, path: impl AsRef<Path>) -> Result<(), Box<dyn Error>> {
+        let details = self
+            .bins_details
+            .as_ref()
+            .ok_or("Calculate histogram bins before drawing")?;
+        HistogramBin::draw_histogram(&details.bins, path, details.end, details.max_bin_count)
+    }
+
+    pub(crate) fn display_bins(&self) {
+        if let Some(details) = &self.bins_details {
+            println!("Price histogram bins (last upper boundary included):");
+            for (i, bin) in details.bins.iter().enumerate() {
+                println!(
+                    "  [${:>9}, ${:>9}{}: {} houses",
+                    bin.get_start(),
+                    bin.get_end(),
+                    if i + 1 == details.bins.len() {
+                        ']'
+                    } else {
+                        ')'
+                    },
+                    bin.get_count()
+                );
+            }
+        }
     }
 }

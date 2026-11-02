@@ -30,8 +30,10 @@ impl HouseType {
             housetype = HouseType::Detached
         } else if (SEMIDETACHED_LOWER_BOUND..SEMIDETACHED_UPPER_BOUND).contains(&prob) {
             housetype = HouseType::SemiDetached
-        } else {
+        } else if (TOWNHOUSE_LOWER_BOUND..TOWNHOUSE_UPPER_BOUND).contains(&prob) {
             housetype = HouseType::TownHouse
+        } else {
+            unreachable!("House type probabilities must cover every outcome");
         }
         housetype
     }

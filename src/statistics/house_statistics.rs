@@ -1,7 +1,7 @@
 use crate::house_properties::house::House;
 use smartcore::numbers::floatnum::FloatNumber;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub(crate) struct HouseStatistics {
     range: f64,
     mean: f64,
@@ -81,13 +81,13 @@ impl HouseStatistics {
     }
 
     pub(crate) fn display_statistics(&self) {
-        println!("Mean: {:.2}", self.mean);
-        println!("Median: {:.2}", self.median);
-        println!("Range: {:.2}", self.range);
-        println!("Low: {:.2}", self.low);
-        println!("High: {:.2}", self.high);
-        println!("Count: {:.2}", self.count);
-        println!("Standard deviation: {:.2}", self.sd);
+        println!("Mean: {:.2}", self.get_mean());
+        println!("Median: {:.2}", self.get_median());
+        println!("Range: {:.2}", self.get_range());
+        println!("Low: {:.2}", self.get_low());
+        println!("High: {:.2}", self.get_high());
+        println!("Count: {}", self.get_count());
+        println!("Standard deviation: {:.2}", self.get_sd());
     }
 
     pub(crate) fn get_range(&self) -> f64 {
