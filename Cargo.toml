@@ -2,9 +2,14 @@
 name = "urban_learn_applied_ml"
 version = "0.1.0"
 edition = "2024"
+default-run = "urban_learn_applied_ml"
+autobins = false
+
+[[bin]]
+name = "urban_learn_applied_ml"
+path = "src/main.rs"
 
 [dependencies]
-macroquad = "0.4.16"
 plotters = "0.3.7"
 rand = "0.10.3"
 serde = { version = "1.0.229", features = ["derive"] }
