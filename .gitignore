@@ -1,2 +1,5 @@
 /target
 /src/bin
+/results/
+/plots/
+/saved_maps/*.json
